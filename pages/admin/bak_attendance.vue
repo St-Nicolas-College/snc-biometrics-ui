@@ -17,8 +17,8 @@ console.log(data)
       <table class="min-w-full table-auto border-collapse border border-gray-300">
         <thead>
           <tr class="bg-gray-100">
-            <th class="border p-2 text-left">UID</th>
             <th class="border p-2 text-left">User ID</th>
+            <th class="border p-2 text-left">Serial No.</th>
             <th class="border p-2 text-left">Timestamp</th>
           </tr>
         </thead>
