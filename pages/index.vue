@@ -1,32 +1,69 @@
 <template>
  <div>
     <h1>Attendance Logs</h1>
-    <!-- <div v-if="pending">Loading...</div>
-    <div v-else-if="error">Error loading data</div>
-    <ul v-else>
-      <li v-for="log in records.data" :key="log">
-      <pre> {{ log }}</pre> 
-      </li>
-    </ul> -->
-    <!-- <pre>{{ records.data.data }}</pre> -->
+    <div v-if="loading">Loading...</div>
+
+    <div v-else class="overflow-x-auto bg-white shadow rounded-lg">
+
+      <v-data-table :items="logs" :headers="headers">
+        <template v-slot:[`item.log_date`]="{ item }">
+          {{ new Date(item.log_date).toLocaleDateString() }}
+        </template>
+ 
+        <template v-slot:[`item.in_time`]="{ item }">
+          <span>{{ new Date(item.in_time).toLocaleTimeString() }}</span>
+        </template>
+        <template v-slot:[`item.out_time`]="{ item }">
+          <span v-if="item.in_time === item.out_time">NO TIME OUT</span>
+          <span v-else>{{ new Date(item.out_time).toLocaleTimeString() }}</span>
+        </template>
+        <template v-slot:[`item.late_minutes`]="{ item }">
+
+      
+          <v-chip size="small" v-if="item.late_minutes > 0" variant="outlined" color="red">
+            {{ item.late_minutes }} min late
+          </v-chip>
+
+        </template>
+
+      </v-data-table>
+      </div>
   </div>
 </template>
 
-<script setup>
-const records = ref(null)
-// const result = await useFetch('/api/zkteco/attendance')
-// const { data, pending, error } = await useFetch('/api/zkteco/attendance')
-// records.value = data.value;
-// console.log(data)
+<script setup lang="ts">
 
-// async function initialize() {
-//   const { data, pending, error } = await useFetch('/api/zkteco/attendance');
-//   console.log(data)
- 
-// }
+const logs = ref<any[]>([])
+const loading = ref(true)
+const headers = ref([
+  {
+    title: "User ID",
+    sortable: true,
+    key: "user_id",
+  },
+  { title: "Name", key: "name", sortable: false },
+  { title: "Date", key: "log_date", sortable: false },
+  // { title: "Formatted Date", key: "formatted_date", sortable: false },
+  { title: "Day", key: "day", sortable: false },
 
-onMounted(async () => {
-  //await initialize();
+  { title: "Time In", key: "in_time", sortable: false },
+  { title: "Time Out", key: "out_time", sortable: false },
+  // { title: "Allowed In", key: "allowed_in", sortable: false },
+  // { title: "Late(minutes)", key: "late_minutes", sortable: false },
+  { title: "Total Hours", key: "total_hours", sortable: false },
+  { title: "Status", key: "status", sortable: false },
+
+
+]);
+
+const fetchAttendance = async () => {
+  const { data } = await useFetch('/api/attendance')
+  logs.value = data.value || []
+  loading.value = false
+}
+
+onMounted(() => {
+  fetchAttendance()
 })
 </script>
 
