@@ -93,9 +93,9 @@ onMounted(() => {
   border-right: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
 
-/* :deep() .v-table .v-table__wrapper>table>tbody>tr:nth-child(even) {
+:deep() .v-table .v-table__wrapper>table>tbody>tr:nth-child(even) {
   background-color: #f2f2f2;
-} */
+}
 
 :deep() .v-table .v-table__wrapper>table>tbody>tr:hover {
   background-color: #f2f2f2;

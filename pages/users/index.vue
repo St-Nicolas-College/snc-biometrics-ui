@@ -16,16 +16,16 @@
           <v-skeleton-loader type="table-row@10"></v-skeleton-loader>
         </template>
         <template v-slot:[`item.actions`]="{ item }">
-          <v-btn @click="addShiftDialogBox(item)" size="small" variant="flat" color="blue" class="mr-2">Add
-            Shift</v-btn>
-          <v-btn :to="`/users/${item.uid}`" variant="flat" size="small" color="primary">View</v-btn>
+          <!-- <v-btn @click="addShiftDialogBox(item)" size="small" variant="flat" color="blue" class="mr-2">Add
+            Shift</v-btn> -->
+          <v-btn :to="`/users/${item.user_id}`" variant="flat" size="small" color="primary" class="text-capitalize"><v-icon start>mdi-open-in-new</v-icon> View</v-btn>
         </template>
 
       </v-data-table>
     </v-card>
 
 
-    <v-dialog max-width="1000" v-model="addShiftDialog" scrollable persistent>
+    <!-- <v-dialog max-width="1000" v-model="addShiftDialog" scrollable persistent>
       <v-card elevation="0">
         <v-toolbar color="primary" density="compact">
           <v-icon class="ml-4">mdi-account-group</v-icon>
@@ -36,30 +36,23 @@
           </v-btn>
         </v-toolbar>
         <div class="ma-5">
-
-
           <v-row dense>
             <v-col cols="2">UID:</v-col>
-            <v-col cols="10">{{ userDetails.uid }}</v-col>
+            <v-col cols="10">{{ userDetails.user_id }}</v-col>
           </v-row>
-
           <v-row dense>
             <v-col cols="2">NAME:</v-col>
             <v-col cols="10">{{ userDetails.name }}</v-col>
           </v-row>
-
-
         </div>
         <v-divider></v-divider>
         <v-card-text>
           <v-row>
             <v-col cols="12" md="4">
               <v-form v-model="valid" ref="createShiftForm" lazy-validation>
-
                 <v-select label="Day" v-model="shiftName" prepend-inner-icon="mdi-calendar" :rules="rules.shiftName"
                   :items="['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']" variant="solo-filled"
                   flat></v-select>
-
                 <v-text-field v-model="timeIn" :active="menu_in" label="Time In" :rules="rules.timeIn"
                   prepend-inner-icon="mdi-clock-time-four-outline" readonly variant="solo-filled" flat>
                   <v-menu v-model="menu_in" :close-on-content-click="false" activator="parent"
@@ -67,7 +60,6 @@
                     <v-time-picker v-if="menu_in" v-model="timeIn" full-width format="24hr" use-seconds></v-time-picker>
                   </v-menu>
                 </v-text-field>
-
                 <v-text-field v-model="timeOut" :active="menu_out" label="Time Out" :rules="rules.TimeOut"
                   prepend-inner-icon="mdi-clock-time-four-outline" readonly variant="solo-filled" flat>
                   <v-menu v-model="menu_out" :close-on-content-click="false" activator="parent"
@@ -76,11 +68,9 @@
                       use-seconds></v-time-picker>
                   </v-menu>
                 </v-text-field>
-
                 <v-text-field v-model="gracePeriod" label="Grace Period (minutes)" type="number"
                   :rules="rules.gracePeriod" prepend-inner-icon="mdi-timer-sand-complete" variant="solo-filled" flat>
                 </v-text-field>
-
                 <v-btn color="primary" block variant="flat" @click="addShift()" v-if="!isUpdate">Save</v-btn>
                 <v-row v-else>
                   <v-col cols="12" md="6"><v-btn color="primary" block variant="flat"
@@ -88,36 +78,33 @@
                   <v-col cols="12" md="6"><v-btn color="warning" block variant="flat"
                       @click="cancelShift()">Cancel</v-btn></v-col>
                 </v-row>
-
               </v-form>
-
             </v-col>
             <v-col cols="12" md="8">
               <v-data-table density="compact" :headers="shiftHeaders" :items="shiftList" :loading="loading">
                 <template v-slot:[`item.actions`]="{ item }">
                   <v-btn variant="text" size="small" color="blue" class="mr-2"
                     @click="editShift(item)"><v-icon>mdi-pencil</v-icon></v-btn>
-
                 </template>
-
               </v-data-table>
             </v-col>
           </v-row>
         </v-card-text>
       </v-card>
-    </v-dialog>
+    </v-dialog> -->
 
 
     <!-- SNACKBAR -->
     <v-snackbar
       v-model="shiftSnackbar"
-      color="success"
+      :color="snackbarColor"
       location="top"
     >
+    <v-icon start>{{ snackbarIcon }}</v-icon>
       {{ snackbarText }}
 
       <template v-slot:actions>
-        <v-btn icon @click="addShiftDialog = false" size="small">
+        <v-btn icon @click="shiftSnackbar = false" size="small">
             <v-icon>mdi-close</v-icon>
           </v-btn>
       </template>
@@ -135,6 +122,7 @@ const valid = ref(true)
 const shiftSnackbar = ref(false);
 const snackbarText = ref("")
 const snackbarColor = ref(null)
+const snackbarIcon = ref(null);
 const headers = ref([
   {
     title: "User ID",
@@ -264,9 +252,17 @@ async function addShift() {
       if (response.status == "fail") {
         //alert(response.message);
         console.log(response.message)
+        snackbarText.value = response.message;
+        snackbarColor.value = "warning"
+        snackbarIcon.value = 'mdi-alert'
+        shiftSnackbar.value = true
 
       } else {
         console.log("Shift created successfully")
+        snackbarText.value = "Shift created successfully";
+        snackbarColor.value = "success"
+        snackbarIcon.value = 'mdi-check-circle'
+        shiftSnackbar.value = true
         //createShiftForm.value?.reset();
         gracePeriod.value = 15
         getShift()
@@ -313,10 +309,16 @@ async function updateShift() {
     if (response.status == "fail") {
         //alert(response.message);
         console.log(response.message)
+        snackbarText.value = response.message;
+        snackbarColor.value = "warning"
+        snackbarIcon.value = 'mdi-alert'
+        shiftSnackbar.value = true
 
       } else {
         console.log("Shift update successfully")
         snackbarText.value = `${shiftName.value} shift updated sucessfully`;
+        snackbarColor.value = "success"
+        snackbarIcon.value = 'mdi-check-circle'
         shiftSnackbar.value = true
         //createShiftForm.value?.reset();
         //gracePeriod.value = 15
