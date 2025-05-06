@@ -52,5 +52,6 @@ const items = [
 <style scoped>
 .border {
   color: green;
+  border: none !important;
 }
 </style>
