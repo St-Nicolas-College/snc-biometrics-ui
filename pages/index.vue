@@ -12,7 +12,7 @@
           variant="solo-filled" flat hide-details single-line></v-text-field>
       </v-card-title>
       <v-divider></v-divider>
-      <v-data-table :items="logs" :headers="headers" density="compact" :items-per-page="20">
+      <v-data-table :items="logs" :headers="headers" :search="search" density="compact" :items-per-page="20">
           <template v-slot:loading>
           <v-skeleton-loader type="table-row@10"></v-skeleton-loader>
         </template>
