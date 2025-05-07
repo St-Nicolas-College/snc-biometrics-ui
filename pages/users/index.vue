@@ -1,9 +1,10 @@
 <template>
   <div>
-    <h1>Users Page</h1>
+    <!-- <h1 class="text-2xl font-bold mb-6">Users Page</h1> -->
 
     <v-card elevation="0">
       <v-card-title class="d-flex align-center pe-2">
+        <v-icon start>mdi-account-group</v-icon> Users Page
         <v-spacer></v-spacer>
         <v-spacer></v-spacer>
         <v-text-field v-model="search" density="compact" label="Search" clearable prepend-inner-icon="mdi-magnify"

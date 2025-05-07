@@ -1,12 +1,12 @@
 <template>
   <div class="p-8">
-    <h1 class="text-2xl font-bold mb-6">Daily Attendance (IN/OUT)</h1>
 
     <div v-if="loading">Loading...</div>
 
     <div v-else class="overflow-x-auto bg-white shadow rounded-lg">
       <v-card elevation="0">
         <v-card-title class="d-flex align-center pe-2">
+         <v-icon start>mdi-calendar-clock</v-icon> Daily Attendance (IN/OUT)
         <v-spacer></v-spacer>
         <v-spacer></v-spacer>
         <v-text-field v-model="search" density="compact" label="Search" clearable prepend-inner-icon="mdi-magnify"
