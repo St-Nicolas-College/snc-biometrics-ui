@@ -14,15 +14,20 @@
           <v-divider></v-divider>
           <v-card-text>
             <v-row dense>
-              <v-col cols="2" class="text-title">User ID</v-col>
+              <v-col cols="3" class="text-title">User ID</v-col>
               <v-col cols="1" class="text-title">:</v-col>
-              <v-col cols="9" class="text-data">{{ userDetails.user_id }}</v-col>
+              <v-col cols="8" class="text-data">{{ userDetails.user_id }}</v-col>
             </v-row>
 
             <v-row dense>
-              <v-col cols="2" class="text-title">Name</v-col>
+              <v-col cols="3" class="text-title">Name</v-col>
               <v-col cols="1" class="text-title">:</v-col>
-              <v-col cols="9" class="text-data">{{ userDetails.name }}</v-col>
+              <v-col cols="8" class="text-data">{{ userDetails.name }}</v-col>
+            </v-row>
+            <v-row dense>
+              <v-col cols="3" class="text-title">Department</v-col>
+              <v-col cols="1" class="text-title">:</v-col>
+              <v-col cols="8" class="text-data">{{ userDetails.department }}</v-col>
             </v-row>
 
             <v-form v-model="valid" class="mt-5" ref="createShiftForm" lazy-validation>
@@ -444,10 +449,20 @@ async function updateUserDetails() {
     user_id: user_id.value,
     name: name.value,
     department: department.value?.dept_code,
-    department_id: department.value?.documentId
+    department_docid: department.value?.documentId,
+    department_id: department.value?.id
   }
-
   console.log("Update Details: ", payload)
+  await $fetch(`/api/user-accounts/update/${user_id.value}`, {
+    method: 'PUT',
+    body: payload
+  }).then(response => {
+    snackbarText.value = "User details updated successfully!";
+    snackbarColor.value = "success";
+    snackbarIcon.value = "mdi-check-circle";
+    shiftSnackbar.value = true;
+    initialize();
+  })
 }
 
 </script>

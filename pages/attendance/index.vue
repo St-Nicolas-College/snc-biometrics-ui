@@ -3,43 +3,65 @@
 
     <div v-if="loading">Loading...</div>
 
-    <div v-else class="overflow-x-auto bg-white shadow rounded-lg">
-      <v-card elevation="0">
+    <div v-else >
+      <v-row justify="center" dense>
+        <v-col cols="12" md="5">
+          <v-card elevation="0">
+            <v-card-text>
+              <v-row dense align="center" justify="center">
+                <v-col cols="12" md="5"> <v-date-input density="compact" label="Select a date start" v-model="dateStart"
+                    prepend-icon="" prepend-inner-icon="$calendar" variant="solo-filled" hide-details
+                    flat></v-date-input></v-col>
+                <v-col cols="12" md="5"> <v-date-input density="compact" label="Select a date end" v-model="dateEnd"
+                    prepend-icon="" prepend-inner-icon="$calendar" variant="solo-filled" hide-details
+                    flat></v-date-input></v-col>
+                <v-col cols="12" md="1"> <v-btn variant="tonal" block color="primary"
+                    @click="searchAttendanceRange"><v-icon>mdi-magnify</v-icon></v-btn></v-col>
+              </v-row>
+
+
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
+      <v-card elevation="0" class="mt-5">
         <v-card-title class="d-flex align-center pe-2">
-         <v-icon start>mdi-calendar-clock</v-icon> Daily Attendance (IN/OUT)
-        <v-spacer></v-spacer>
-        <v-spacer></v-spacer>
-        <v-text-field v-model="search" density="compact" label="Search" clearable prepend-inner-icon="mdi-magnify"
-          variant="solo-filled" flat hide-details single-line></v-text-field>
-      </v-card-title>
-      <v-divider></v-divider>
-      <v-data-table :items="logs" :headers="headers" :search="search" :loading="loading" density="compact" :items-per-page="20">
-        <template v-slot:loading>
-          <v-skeleton-loader type="table-row@10"></v-skeleton-loader>
-        </template>
-        <template v-slot:[`item.log_date`]="{ item }">
-          {{ new Date(item.log_date).toLocaleDateString() }}
-        </template>
-        <template v-slot:[`item.in_time`]="{ item }">
-          <span>{{ new Date(item.in_time).toLocaleTimeString() }}</span>
-        </template>
-        <template v-slot:[`item.out_time`]="{ item }">
-          <span v-if="item.in_time === item.out_time">NO TIME OUT</span>
-          <span v-else>{{ new Date(item.out_time).toLocaleTimeString() }}</span>
-        </template>
-        <template v-slot:[`item.late_minutes`]="{ item }">
+          <v-icon start>mdi-calendar-clock</v-icon> Daily Attendance (IN/OUT)
+          <v-spacer></v-spacer>
+
+          <v-spacer></v-spacer>
+          <v-text-field v-model="search" density="compact" label="Search" clearable prepend-inner-icon="mdi-magnify"
+            variant="solo-filled" flat hide-details single-line></v-text-field>
+        </v-card-title>
+        <v-divider></v-divider>
+        <v-data-table :items="logs" :headers="headers" :search="search" :loading="loading" density="compact"
+          :items-per-page="20">
+          <template v-slot:loading>
+            <v-skeleton-loader type="table-row@10"></v-skeleton-loader>
+          </template>
+          <template v-slot:[`item.log_date`]="{ item }">
+            {{ new Date(item.log_date).toLocaleDateString() }}
+          </template>
+          <template v-slot:[`item.in_time`]="{ item }">
+            <span>{{ new Date(item.in_time).toLocaleTimeString() }}</span>
+          </template>
+          <template v-slot:[`item.out_time`]="{ item }">
+            <span v-if="item.in_time === item.out_time">NO TIME OUT</span>
+            <span v-else>{{ new Date(item.out_time).toLocaleTimeString() }}</span>
+          </template>
+          <template v-slot:[`item.late_minutes`]="{ item }">
 
 
-          <v-chip size="small" v-if="item.late_minutes > 0" variant="outlined" color="red">
-            {{ item.late_minutes }} min late
-          </v-chip>
+            <v-chip size="small" v-if="item.late_minutes > 0" variant="outlined" color="red">
+              {{ item.late_minutes }} min late
+            </v-chip>
 
-        </template>
+          </template>
 
-      </v-data-table>
+        </v-data-table>
 
       </v-card>
-      
+
 
       <!-- <table class="min-w-full table-auto text-sm">
         <thead class="bg-gray-100">
@@ -69,6 +91,8 @@
 const logs = ref<any[]>([])
 const loading = ref(true)
 const search = ref('');
+const dateStart = ref(null)
+const dateEnd = ref(null)
 const headers = ref([
   {
     title: "User ID",
@@ -98,6 +122,22 @@ const fetchAttendance = async () => {
   const { data } = await useFetch('/api/attendance/inout_shift')
   logs.value = data.value || []
   loading.value = false
+}
+
+async function searchAttendanceRange() {
+  //@ts-ignore
+  const formattedDateStart = new Date(dateStart.value).toLocaleDateString()
+  //@ts-ignore
+  // const formattedDateEnd = new Date(dateEnd.value).toISOString().split('T')[0]
+  const formattedDateEnd = new Date(dateEnd.value).toLocaleDateString()
+  console.log("Date Start: ", formattedDateStart);
+  console.log("Date End: ", formattedDateEnd)
+
+  let result = await $fetch(`/api/attendance/search?date_start=${formattedDateStart}&date_end=${formattedDateEnd}`);
+  if (result) {
+    console.log(result)
+    logs.value = result
+  }
 }
 
 onMounted(() => {

@@ -1,0 +1,23 @@
+services:
+  snc-biometrics-v3:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - ${PORT}:${PORT}
+    environment:
+      BASE_URL: ${BASE_URL}
+      ZKTECO_IP: ${ZKTECO_IP}
+      ZKTECO_PORT: ${ZKTECO_PORT}
+      DATABASE_URL: ${DATABASE_URL}
+      DB_HOST: host.docker.internal
+      DB_PORT: ${DB_PORT}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      TZ: Asia/Kuala_Lumpur
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+      
