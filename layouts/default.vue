@@ -1,10 +1,17 @@
 <template>
   <v-app>
     <v-navigation-drawer v-model="drawer">
+
+     <!-- <div class="image-container">
+        <v-img src="/SNC-Logo.png" alt="Centered Image" class="rounded-image"></v-img>
+      </div> -->
       <v-list>
-        <v-list-item prepend-avatar="https://randomuser.me/api/portraits/women/85.jpg" subtitle="sandra_a88@gmailcom"
-          title="Sandra Adams"></v-list-item>
-      </v-list>
+          <v-list-item
+            prepend-avatar="/SNC-Logo.png"
+            subtitle="Online"
+            title="St. Nicolas College"
+          ></v-list-item>
+        </v-list>
 
       <v-divider></v-divider>
 
@@ -54,5 +61,9 @@ const items = [
 .border {
   color: green;
   border: none !important;
+}
+.image-container {
+  width: 35%;
+  margin: 15px auto;
 }
 </style>

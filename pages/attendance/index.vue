@@ -93,6 +93,7 @@ const loading = ref(true)
 const search = ref('');
 const dateStart = ref(null)
 const dateEnd = ref(null)
+const dateF = ref(null);
 const headers = ref([
   {
     title: "User ID",
@@ -126,10 +127,10 @@ const fetchAttendance = async () => {
 
 async function searchAttendanceRange() {
   //@ts-ignore
-  const formattedDateStart = new Date(dateStart.value).toLocaleDateString()
+  const formattedDateStart = new Date(dateStart.value).toLocaleDateString('en-GB')
   //@ts-ignore
-  // const formattedDateEnd = new Date(dateEnd.value).toISOString().split('T')[0]
-  const formattedDateEnd = new Date(dateEnd.value).toLocaleDateString()
+  //const formattedDateEnd = new Date(dateEnd.value).toISOString().split('T')[0]
+  const formattedDateEnd = new Date(dateEnd.value).toLocaleDateString('en-GB')
   console.log("Date Start: ", formattedDateStart);
   console.log("Date End: ", formattedDateEnd)
 
