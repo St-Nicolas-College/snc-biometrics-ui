@@ -20,6 +20,7 @@
           <v-list-item active-class="border" prepend-icon="mdi-calendar-clock" title="Attendance" to="/attendance" :active="$route.path.startsWith('/attendance')"></v-list-item>
           <v-list-item active-class="border" prepend-icon="mdi-account-group" title="Users" to="/users" :active="$route.path.startsWith('/users')"></v-list-item>
           <v-list-item active-class="border" prepend-icon="mdi-office-building" title="Department" to="/department" :active="$route.path.startsWith('/department')"></v-list-item>
+          <v-list-item active-class="border" prepend-icon="mdi-notebook" title="Reports" to="/reports" :active="$route.path.startsWith('/reports')"></v-list-item>
         </v-list>
 
     </v-navigation-drawer>
@@ -53,6 +54,8 @@ const items = [
     icon: 'mdi-account',
     to: '/users'
   },
+  
+  
 ]
 
 </script>
