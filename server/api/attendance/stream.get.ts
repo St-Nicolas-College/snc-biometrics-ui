@@ -1,30 +1,109 @@
-// @ts-ignore
-import { createStreamHandler } from 'h3';
-import { query } from '~/server/utils/db';
+import {
+  createEventStream
+} from 'h3'
 
-let clients: any[] = [];
+import {
+  registerAttendanceClient
+} from '~/server/utils/attendanceStream'
 
-export default defineEventHandler(async (event) => {
-  // Set headers for SSE
-  setResponseHeaders(event, {
-    'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
-    Connection: 'keep-alive',
-  });
+export default defineEventHandler(
+  (event) => {
 
-  // Push this connection to clients
-  clients.push(event);
+    /*
+    |--------------------------------------------------------------------------
+    | Create SSE Stream
+    |--------------------------------------------------------------------------
+    */
 
-  // Remove client on close
-  event.node.res.on('close', () => {
-    clients = clients.filter(c => c !== event);
-  });
-});
+    const eventStream =
+      createEventStream(
+        event
+      )
 
-// Broadcast function
-export async function broadcastNewLog(log: any) {
-  clients.forEach(client => {
-    // @ts-ignore
-    writeStreamData(client, `data: ${JSON.stringify(log)}\n\n`);
-  });
-}
+    /*
+    |--------------------------------------------------------------------------
+    | Register browser connection
+    |--------------------------------------------------------------------------
+    */
+
+    const unregister =
+      registerAttendanceClient(
+        eventStream
+      )
+
+    /*
+    |--------------------------------------------------------------------------
+    | Send Connected Event
+    |--------------------------------------------------------------------------
+    */
+
+    void eventStream.push({
+      event: 'connected',
+
+      data:
+        JSON.stringify({
+          connected: true,
+
+          timestamp:
+            new Date()
+              .toISOString()
+        })
+    })
+
+    /*
+    |--------------------------------------------------------------------------
+    | Keep Alive
+    |--------------------------------------------------------------------------
+    */
+
+    const heartbeat =
+      setInterval(
+        () => {
+
+          void eventStream.push({
+            event: 'heartbeat',
+
+            data:
+              JSON.stringify({
+                timestamp:
+                  new Date()
+                    .toISOString()
+              })
+          })
+
+        },
+        30000
+      )
+
+    /*
+    |--------------------------------------------------------------------------
+    | Client Closed
+    |--------------------------------------------------------------------------
+    */
+
+    eventStream.onClosed(
+      async () => {
+
+        clearInterval(
+          heartbeat
+        )
+
+        unregister()
+
+        try {
+          await eventStream.close()
+        } catch {
+          // Already closed
+        }
+      }
+    )
+
+    /*
+    |--------------------------------------------------------------------------
+    | Keep Response Open
+    |--------------------------------------------------------------------------
+    */
+
+    return eventStream.send()
+  }
+)

@@ -1,154 +1,202 @@
-//@ts-ignore
+// @ts-ignore
 import ZKLib from "node-zklib";
-import dotenv from "dotenv";
 
 import { query } from "./db";
-import { syncZktecoUsers, type ZKTecoUser } from "./zkTecoUserSync";
 
-import { broadcastNewLog } from "../api/attendance/stream.get";
-
-dotenv.config();
-
-/*
-|--------------------------------------------------------------------------
-| Configuration
-|--------------------------------------------------------------------------
-*/
+import { broadcastNewLog } from "./attendanceStream";
 
 const deviceIP = process.env.ZKTECO_IP ?? "";
 
 const devicePort = Number(process.env.ZKTECO_PORT ?? 4370);
 
-// Poll every 60 seconds
-const pollingInterval = 60 * 1000;
+/*
+ * Approximately 0-3 second latency.
+ */
+const pollingInterval = 3000;
 
-// Insert 500 attendance records
-// per PostgreSQL query
 const batchSize = 500;
 
-if (!deviceIP) {
-  throw new Error("ZKTECO_IP is missing from .env");
-}
+let serviceRunning = false;
 
-/*
-|--------------------------------------------------------------------------
-| State
-|--------------------------------------------------------------------------
-*/
-
-let syncRunning = false;
-
-let serviceStarted = false;
+let pollRunning = false;
 
 let timer: NodeJS.Timeout | null = null;
 
-let activeZk: any = null;
-
-/*
- * During the first synchronization we may
- * insert 66,000+ historical punches.
- *
- * We don't want to broadcast all of them
- * to the frontend.
- */
-let initialAttendanceSyncCompleted = false;
-
 /*
 |--------------------------------------------------------------------------
-| Types
+| Ensure State Table
 |--------------------------------------------------------------------------
 */
 
-interface RawAttendanceLog {
-  userSn: number | string;
+async function ensureState() {
+  await query(`
+    CREATE TABLE IF NOT EXISTS
+      public.zkteco_sync_state
+    (
+      device_ip
+        VARCHAR(45)
+        PRIMARY KEY,
 
-  deviceUserId: number | string;
+      last_device_log_count
+        INTEGER
+        NOT NULL
+        DEFAULT 0,
 
-  recordTime: Date | string;
+      updated_at
+        TIMESTAMP
+        DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
 
-  ip?: string;
-}
+  await query(
+    `
+    INSERT INTO
+      public.zkteco_sync_state
+    (
+      device_ip
+    )
+    VALUES ($1)
 
-interface NormalizedAttendanceLog {
-  deviceUid: number;
-  userId: number;
-  recordTime: Date | string;
-}
-
-/*
-|--------------------------------------------------------------------------
-| Normalize Attendance
-|--------------------------------------------------------------------------
-*/
-
-function normalizeAttendanceLogs(
-  attendance: RawAttendanceLog[],
-): NormalizedAttendanceLog[] {
-  const validLogs: NormalizedAttendanceLog[] = [];
-
-  let invalidCount = 0;
-
-  for (const log of attendance) {
-    const deviceUid = Number(log.userSn);
-
-    const userId = Number(log.deviceUserId);
-
-    if (Number.isNaN(deviceUid) || Number.isNaN(userId) || !log.recordTime) {
-      invalidCount++;
-
-      console.warn("Invalid attendance record:", log);
-
-      continue;
-    }
-
-    validLogs.push({
-      deviceUid,
-      userId,
-      recordTime: log.recordTime,
-    });
-  }
-
-  if (invalidCount > 0) {
-    console.warn(`Skipped ${invalidCount} invalid attendance records.`);
-  }
-
-  return validLogs;
+    ON CONFLICT (
+      device_ip
+    )
+    DO NOTHING
+    `,
+    [deviceIP],
+  );
 }
 
 /*
 |--------------------------------------------------------------------------
-| Batch Insert
+| Known Device Count
 |--------------------------------------------------------------------------
 */
 
-async function insertAttendanceBatch(logs: NormalizedAttendanceLog[]) {
-  if (logs.length === 0) {
-    return [];
+async function getKnownCount() {
+  const rows = await query(
+    `
+      SELECT
+        last_device_log_count
+
+      FROM
+        public.zkteco_sync_state
+
+      WHERE
+        device_ip = $1
+
+      LIMIT 1
+      `,
+    [deviceIP],
+  );
+
+  return Number(rows[0]?.last_device_log_count ?? 0);
+}
+
+async function setKnownCount(count: number) {
+  await query(
+    `
+    UPDATE
+      public.zkteco_sync_state
+
+    SET
+      last_device_log_count = $2,
+      updated_at = CURRENT_TIMESTAMP
+
+    WHERE
+      device_ip = $1
+    `,
+    [deviceIP, count],
+  );
+}
+
+/*
+|--------------------------------------------------------------------------
+| Validate Attendance
+|--------------------------------------------------------------------------
+*/
+
+function isValidLog(log: any) {
+  const userId = Number(log.deviceUserId);
+
+  if (Number.isNaN(userId) || userId <= 0) {
+    return false;
   }
 
+  if (!log.recordTime) {
+    return false;
+  }
+
+  const time = new Date(log.recordTime);
+
+  if (Number.isNaN(time.getTime())) {
+    return false;
+  }
+
+  /*
+   * Ignore the bogus year-2000
+   * records found in this device.
+   */
+  if (time.getFullYear() < 2020) {
+    return false;
+  }
+
+  return true;
+}
+
+/*
+|--------------------------------------------------------------------------
+| Insert Batch
+|--------------------------------------------------------------------------
+*/
+
+async function insertBatch(logs: any[]) {
   const values: any[] = [];
 
   const placeholders: string[] = [];
 
-  for (let index = 0; index < logs.length; index++) {
-    const log = logs[index];
+  for (const log of logs) {
+    if (!isValidLog(log)) {
+      continue;
+    }
 
-    const parameterStart = index * 3;
+    const userId = Number(log.deviceUserId);
 
-    values.push(log.deviceUid, log.userId, log.recordTime);
+    const timestamp = new Date(log.recordTime);
+
+    const deviceUid =
+      log.userSn !== undefined && log.userSn !== null
+        ? Number(log.userSn)
+        : null;
+
+    const offset = values.length;
+
+    values.push(
+      Number.isNaN(deviceUid) ? null : deviceUid,
+
+      userId,
+
+      timestamp,
+    );
 
     placeholders.push(`
       (
-        $${parameterStart + 1},
-        $${parameterStart + 2},
-        $${parameterStart + 3},
+        $${offset + 1},
+        $${offset + 2},
+        $${offset + 3},
         CURRENT_TIMESTAMP
       )
     `);
   }
 
-  const sql = `
-    INSERT INTO public.attendance_logs (
+  if (placeholders.length === 0) {
+    return [];
+  }
+
+  return await query(
+    `
+    INSERT INTO
+      public.attendance_logs
+    (
       device_uid,
       user_id,
       "timestamp",
@@ -159,345 +207,224 @@ async function insertAttendanceBatch(logs: NormalizedAttendanceLog[]) {
       ${placeholders.join(",")}
 
     ON CONFLICT (
-      device_uid,
       user_id,
       "timestamp"
     )
 
     DO NOTHING
 
-    RETURNING
-      id,
-      device_uid,
-      user_id,
-      "timestamp",
-      created_at
-  `;
-
-  return await query(sql, values);
+    RETURNING *
+    `,
+    values,
+  );
 }
 
 /*
 |--------------------------------------------------------------------------
-| Attendance Database Synchronization
+| Reconcile
 |--------------------------------------------------------------------------
 */
 
-async function syncAttendance(attendance: RawAttendanceLog[]) {
+async function reconcile(zk: any, deviceCount: number) {
   console.log("");
-  console.log("=================================");
-  console.log("Starting Attendance DB Sync");
-  console.log("=================================");
+  console.log("New biometric attendance detected.");
 
-  console.log(`Attendance received: ${attendance.length}`);
+  console.log(`Device count: ${deviceCount}`);
 
-  const validLogs = normalizeAttendanceLogs(attendance);
-
-  console.log(`Valid attendance: ${validLogs.length}`);
-
-  let processed = 0;
-
-  let totalInserted = 0;
-
-  let totalExisting = 0;
+  const attendance = await zk.getAttendances();
 
   /*
-  |--------------------------------------------------------------------------
-  | Process in batches
-  |--------------------------------------------------------------------------
-  */
+   * Important optimization:
+   *
+   * We still receive the device collection,
+   * but PostgreSQL will only insert missing
+   * records.
+   */
 
-  for (let start = 0; start < validLogs.length; start += batchSize) {
-    const batch = validLogs.slice(start, start + batchSize);
+  const newRows: any[] = [];
 
-    try {
-      const inserted = await insertAttendanceBatch(batch);
+  for (let start = 0; start < attendance.data.length; start += batchSize) {
+    const batch = attendance.data.slice(start, start + batchSize);
 
-      const insertedCount = inserted.length;
+    const inserted = await insertBatch(batch);
 
-      const existingCount = batch.length - insertedCount;
-
-      totalInserted += insertedCount;
-
-      totalExisting += existingCount;
-
-      processed += batch.length;
-
-      console.log(
-        `Attendance progress: ` +
-          `${processed}/${validLogs.length}` +
-          ` | New: ${totalInserted}` +
-          ` | Existing: ${totalExisting}`,
-      );
-
-      /*
-      |--------------------------------------------------------------------------
-      | Live Broadcast
-      |--------------------------------------------------------------------------
-      |
-      | Don't broadcast the initial historical import.
-      |
-      | After the first successful synchronization,
-      | every newly inserted attendance punch can be
-      | broadcast to the frontend.
-      |
-      */
-
-      if (initialAttendanceSyncCompleted) {
-        for (const row of inserted) {
-          try {
-            await broadcastNewLog(row);
-          } catch (broadcastError) {
-            console.error("Attendance broadcast error:", broadcastError);
-          }
-        }
-      }
-    } catch (error) {
-      console.error("");
-      console.error("Attendance batch insert failed.");
-
-      console.error(`Batch: ${start + 1} - ${start + batch.length}`);
-
-      console.error(error);
-
-      throw error;
-    }
+    newRows.push(...inserted);
   }
 
-  console.log("");
-  console.log("=================================");
-  console.log("Attendance Sync Complete");
-  console.log("=================================");
+  /*
+   * Update count AFTER successful
+   * reconciliation.
+   */
+  await setKnownCount(deviceCount);
 
-  console.log(`Device records : ${attendance.length}`);
-
-  console.log(`Valid records  : ${validLogs.length}`);
-
-  console.log(`New inserted   : ${totalInserted}`);
-
-  console.log(`Already exists : ${totalExisting}`);
-
-  console.log("=================================");
-  console.log("");
+  console.log(`New attendance rows: ${newRows.length}`);
 
   /*
-   * First historical synchronization
-   * has now completed.
+   * Oldest -> newest
    */
-  initialAttendanceSyncCompleted = true;
+  newRows.sort(
+    (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+  );
+
+  /*
+   * Send only genuinely new records
+   * to the browser.
+   */
+  for (const row of newRows) {
+    console.log("");
+    console.log(">>> NEW BIOMETRIC PUNCH <<<");
+
+    console.log(`User: ${row.user_id}`);
+
+    console.log(`Time: ${row.timestamp}`);
+
+    await broadcastNewLog(row);
+  }
 }
 
 /*
 |--------------------------------------------------------------------------
-| Main Device Synchronization
+| Poll Device
 |--------------------------------------------------------------------------
 */
 
-async function synchronizeDevice() {
-  if (syncRunning) {
-    console.log("ZKTeco sync is already running. Skipping.");
-
+async function poll() {
+  if (!serviceRunning || pollRunning) {
     return;
   }
 
-  syncRunning = true;
+  pollRunning = true;
 
-  /*
-   * 30-second communication timeout
-   */
-  const zk = new ZKLib(deviceIP, devicePort, 30000);
-
-  activeZk = zk;
+  const zk = new ZKLib(deviceIP, devicePort, 10000);
 
   let connected = false;
 
   try {
-    console.log("");
-    console.log("=================================");
-
-    console.log("Starting ZKTeco Synchronization");
-
-    console.log("=================================");
-
-    console.log(`Device: ${deviceIP}:${devicePort}`);
-
-    /*
-    |--------------------------------------------------------------------------
-    | Connect
-    |--------------------------------------------------------------------------
-    */
-
-    console.log("");
-    console.log("Connecting to ZKTeco device...");
-
     await zk.createSocket();
 
     connected = true;
 
-    console.log("Connected to ZKTeco device");
+    const info = await zk.getInfo();
+
+    const deviceCount = Number(info.logCounts ?? 0);
+
+    const knownCount = await getKnownCount();
 
     /*
-    |--------------------------------------------------------------------------
-    | Download Users
-    |--------------------------------------------------------------------------
-    */
-
-    console.log("");
-    console.log("Downloading users...");
-
-    const userData = await zk.getUsers();
-
-    console.log(`Received ${userData.data.length} users from device`);
-
-    /*
-    |--------------------------------------------------------------------------
-    | Download Attendance
-    |--------------------------------------------------------------------------
-    */
-
-    console.log("");
-    console.log("Downloading attendance...");
-
-    const attendanceData = await zk.getAttendances();
-
-    console.log(
-      `Received ${attendanceData.data.length} attendance records from device`,
-    );
-
-    /*
-    |--------------------------------------------------------------------------
-    | Disconnect Immediately
-    |--------------------------------------------------------------------------
-    |
-    | PostgreSQL processing may take time.
-    | We don't need to keep the ZKTeco
-    | connection open while processing.
-    |
-    */
-
-    console.log("");
-    console.log("Disconnecting from ZKTeco device...");
-
-    await zk.disconnect();
-
-    connected = false;
-
-    console.log("Disconnected from ZKTeco device");
-
-    /*
-    |--------------------------------------------------------------------------
-    | PostgreSQL User Sync
-    |--------------------------------------------------------------------------
-    */
-
-    await syncZktecoUsers(userData.data as ZKTecoUser[]);
-
-    /*
-    |--------------------------------------------------------------------------
-    | PostgreSQL Attendance Sync
-    |--------------------------------------------------------------------------
-    */
-
-    await syncAttendance(attendanceData.data as RawAttendanceLog[]);
-
-    console.log("ZKTeco synchronization successfully completed.");
-  } catch (error) {
-    console.error("");
-    console.error("ZKTeco synchronization error:");
-
-    console.error(error);
-  } finally {
-    /*
-     * Emergency cleanup if an error
-     * happened before normal disconnect.
+     * First start after installing
+     * the watcher.
      */
+    if (knownCount === 0) {
+      console.log(`Initializing attendance count: ${deviceCount}`);
+
+      /*
+       * Existing attendance is already
+       * in PostgreSQL, so don't download
+       * everything just because state
+       * table is new.
+       */
+      await setKnownCount(deviceCount);
+    } else if (deviceCount > knownCount) {
+
+    /*
+     * New punch(es)
+     */
+      console.log("");
+      console.log("=================================");
+
+      console.log("ATTENDANCE CHANGE DETECTED");
+
+      console.log(`Previous : ${knownCount}`);
+
+      console.log(`Current  : ${deviceCount}`);
+
+      console.log(`New logs : ${deviceCount - knownCount}`);
+
+      console.log("=================================");
+
+      await reconcile(zk, deviceCount);
+    } else if (deviceCount < knownCount) {
+
+    /*
+     * Device logs were cleared.
+     */
+      console.warn(
+        `ZKTeco log count decreased: ${knownCount} -> ${deviceCount}`,
+      );
+
+      await setKnownCount(deviceCount);
+    }
+  } catch (error) {
+    console.error("ZKTeco watcher error:", error);
+  } finally {
     if (connected) {
       try {
         await zk.disconnect();
-
-        console.log("Disconnected from ZKTeco device");
       } catch {
-        // Ignore cleanup failure
+        // Ignore
       }
     }
 
-    syncRunning = false;
+    pollRunning = false;
   }
 }
 
 /*
 |--------------------------------------------------------------------------
-| Polling Loop
+| Loop
 |--------------------------------------------------------------------------
 */
 
-async function pollingLoop() {
-  if (!serviceStarted) {
+async function loop() {
+  if (!serviceRunning) {
     return;
   }
 
-  await synchronizeDevice();
+  await poll();
 
-  /*
-   * Schedule only AFTER the current
-   * synchronization has completely finished.
-   *
-   * This prevents overlapping polls.
-   */
-  if (serviceStarted) {
-    timer = setTimeout(pollingLoop, pollingInterval);
+  if (serviceRunning) {
+    timer = setTimeout(loop, pollingInterval);
   }
 }
 
 /*
 |--------------------------------------------------------------------------
-| Start Service
+| Start
 |--------------------------------------------------------------------------
 */
 
-export function startZktecoSync() {
-  if (serviceStarted) {
-    console.log("ZKTeco synchronization service is already running.");
-
+export async function startZktecoSync() {
+  if (serviceRunning) {
     return;
   }
 
-  serviceStarted = true;
+  await ensureState();
 
-  console.log("Starting ZKTeco synchronization service...");
+  serviceRunning = true;
 
-  void pollingLoop();
+  console.log("ZKTeco near-real-time watcher started.");
+
+  console.log(`Device: ${deviceIP}:${devicePort}`);
+
+  console.log(`Detection interval: ${pollingInterval / 1000} seconds`);
+
+  void loop();
 }
 
 /*
 |--------------------------------------------------------------------------
-| Stop Service
+| Stop
 |--------------------------------------------------------------------------
 */
 
-export async function stopZktecoSync() {
-  serviceStarted = false;
+export function stopZktecoSync() {
+  serviceRunning = false;
 
   if (timer) {
     clearTimeout(timer);
+
     timer = null;
   }
 
-  if (activeZk) {
-    try {
-      console.log("Disconnecting active ZKTeco connection...");
-
-      await activeZk.disconnect();
-
-      console.log("Active ZKTeco connection disconnected.");
-    } catch (error) {
-      console.warn("ZKTeco disconnect warning:", error);
-    }
-
-    activeZk = null;
-  }
-
-  syncRunning = false;
-
-  console.log("ZKTeco synchronization service stopped.");
+  console.log("ZKTeco watcher stopped.");
 }

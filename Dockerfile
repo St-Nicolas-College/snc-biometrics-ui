@@ -1,36 +1,36 @@
-# Use the official lightweight Node.js 12 image.
-# https://hub.docker.com/_/node
-# Choose the Server and Node Version
-FROM node:20-alpine
+# Use Node.js 22
+FROM node:22-alpine
 
-# Create and change to the app directory.
-RUN mkdir -p /usr/src/myapp
+# Set application directory
 WORKDIR /usr/src/myapp
 
-# update and install dependency
-RUN apk update && apk upgrade
-RUN apk add git
+# Install required Alpine packages
+RUN apk add --no-cache git tzdata
 
-# Copy the local source code from the folder to the container
+# Copy package files first for better Docker caching
+COPY package.json package-lock.json ./
+
+# Install exact dependencies from package-lock.json
+RUN npm ci
+
+# Copy the rest of the source code
 COPY . .
 
-# Install production dependencies.
-RUN yarn install
-
-# Assign ENV variables
-# Bind the App to any IP
+# Production environment
 ENV NODE_ENV=production
-ENV NITRO_PORT=3008
+
+# Nuxt/Nitro server configuration
 ENV NITRO_HOST=0.0.0.0
-# ENV STRAPI_BASEURL=STRAPI_BASEURL
+ENV NITRO_PORT=3008
 
-# Build the production Version of the Application
-RUN yarn build
+# Set timezone
+ENV TZ=Asia/Manila
 
+# Build Nuxt application
+RUN npm run build
 
-# Expose the Port Outside the container to the localhost
-EXPOSE 3000
+# Container listens on port 3008
+EXPOSE 3008
 
-# Run Command after building the container
-ENTRYPOINT [ "node", ".output/server/index.mjs" ]
-# CMD [ "yarn", "run", "dev" ]  # Use CMD for running the app
+# Start Nuxt/Nitro production server
+CMD ["node", ".output/server/index.mjs"]

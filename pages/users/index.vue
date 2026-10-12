@@ -1,360 +1,936 @@
 <template>
-  <div>
-    <!-- <h1 class="text-2xl font-bold mb-6">Users Page</h1> -->
+  <div class="users-page">
+    <!-- =========================================================
+         PAGE HEADER
+    ========================================================== -->
+    <div class="page-header mb-6">
+      <div>
+        <div class="d-flex align-center ga-2 mb-1">
+          <v-icon color="primary" size="28"> mdi-account-group-outline </v-icon>
 
-    <v-card elevation="0">
-      <v-card-title class="d-flex align-center pe-2">
-        <v-icon start>mdi-account-group</v-icon> Users Page
-        <v-spacer></v-spacer>
-        <v-spacer></v-spacer>
-        <v-text-field v-model="search" density="compact" label="Search" clearable prepend-inner-icon="mdi-magnify"
-          variant="solo-filled" flat hide-details single-line></v-text-field>
-      </v-card-title>
-      <v-divider></v-divider>
-      <v-data-table :headers="headers" :items="userAccountList" :search="search" :loading="loading" density="compact"
-        :items-per-page="20">
-        <template v-slot:loading>
-          <v-skeleton-loader type="table-row@10"></v-skeleton-loader>
-        </template>
-        <template v-slot:[`item.actions`]="{ item }">
-          <!-- <v-btn @click="addShiftDialogBox(item)" size="small" variant="flat" color="blue" class="mr-2">Add
-            Shift</v-btn> -->
-          <v-btn :to="`/users/${item.user_id}`" variant="flat" size="small" color="primary" class="text-capitalize"><v-icon start>mdi-open-in-new</v-icon> View</v-btn>
+          <h1 class="page-title">Users</h1>
+        </div>
+
+        <p class="page-subtitle">
+          View biometric users registered in the attendance system.
+        </p>
+      </div>
+
+      <div class="header-actions">
+        <v-btn
+          color="primary"
+          variant="tonal"
+          prepend-icon="mdi-refresh"
+          :loading="refreshing"
+          @click="initialize(false)"
+        >
+          Refresh
+        </v-btn>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         SUMMARY CARDS
+    ========================================================== -->
+    <v-row class="mb-5">
+      <!-- Total Users -->
+      <v-col cols="12" sm="6" lg="3">
+        <v-card elevation="0" class="summary-card">
+          <v-card-text>
+            <div class="d-flex justify-space-between align-start">
+              <div>
+                <div class="summary-label">Total Users</div>
+
+                <div class="summary-value">
+                  {{ userAccountList.length }}
+                </div>
+
+                <div class="summary-description">
+                  Registered biometric users
+                </div>
+              </div>
+
+              <div class="summary-icon icon-primary">
+                <v-icon> mdi-account-group-outline </v-icon>
+              </div>
+            </div>
+          </v-card-text>
+        </v-card>
+      </v-col>
+
+      <!-- With Card -->
+      <v-col cols="12" sm="6" lg="3">
+        <v-card elevation="0" class="summary-card">
+          <v-card-text>
+            <div class="d-flex justify-space-between align-start">
+              <div>
+                <div class="summary-label">With Card</div>
+
+                <div class="summary-value text-primary">
+                  {{ usersWithCard }}
+                </div>
+
+                <div class="summary-description">Users with card number</div>
+              </div>
+
+              <div class="summary-icon icon-info">
+                <v-icon> mdi-card-account-details-outline </v-icon>
+              </div>
+            </div>
+          </v-card-text>
+        </v-card>
+      </v-col>
+
+      <!-- Without Card -->
+      <v-col cols="12" sm="6" lg="3">
+        <v-card elevation="0" class="summary-card">
+          <v-card-text>
+            <div class="d-flex justify-space-between align-start">
+              <div>
+                <div class="summary-label">Without Card</div>
+
+                <div class="summary-value text-warning">
+                  {{ usersWithoutCard }}
+                </div>
+
+                <div class="summary-description">No card number assigned</div>
+              </div>
+
+              <div class="summary-icon icon-warning">
+                <v-icon> mdi-card-off-outline </v-icon>
+              </div>
+            </div>
+          </v-card-text>
+        </v-card>
+      </v-col>
+
+      <!-- Roles -->
+      <v-col cols="12" sm="6" lg="3">
+        <v-card elevation="0" class="summary-card">
+          <v-card-text>
+            <div class="d-flex justify-space-between align-start">
+              <div>
+                <div class="summary-label">Roles</div>
+
+                <div class="summary-value">
+                  {{ roleCount }}
+                </div>
+
+                <div class="summary-description">User role classifications</div>
+              </div>
+
+              <div class="summary-icon icon-success">
+                <v-icon> mdi-account-key-outline </v-icon>
+              </div>
+            </div>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+
+    <!-- =========================================================
+         USER DIRECTORY
+    ========================================================== -->
+    <v-card elevation="0" class="users-card">
+      <!-- Toolbar -->
+      <div class="table-toolbar">
+        <div>
+          <div class="section-title">User Directory</div>
+
+          <div class="section-subtitle">
+            Browse and manage biometric user profiles.
+          </div>
+        </div>
+
+        <div class="toolbar-actions">
+          <v-text-field
+            v-model="search"
+            density="compact"
+            placeholder="Search users..."
+            clearable
+            prepend-inner-icon="mdi-magnify"
+            variant="outlined"
+            hide-details
+            class="search-field"
+          />
+        </div>
+      </div>
+
+      <v-divider />
+
+      <!-- Error -->
+      <v-alert
+        v-if="errorMessage"
+        type="error"
+        variant="tonal"
+        closable
+        class="ma-4"
+        @click:close="errorMessage = ''"
+      >
+        {{ errorMessage }}
+      </v-alert>
+
+      <!-- =======================================================
+           TABLE
+      ======================================================== -->
+      <v-data-table
+        :headers="headers"
+        :items="userAccountList"
+        :search="search"
+        :loading="loading"
+        density="comfortable"
+        :items-per-page="20"
+        class="users-table"
+      >
+        <!-- Loading -->
+        <template #loading>
+          <v-skeleton-loader type="table-row@10" />
         </template>
 
+        <!-- =====================================================
+             USER
+        ====================================================== -->
+        <template #[`item.name`]="{ item }">
+          <div class="user-cell">
+            <v-avatar size="38" color="green-lighten-5">
+              <span class="avatar-text">
+                {{ getInitials(item.name) }}
+              </span>
+            </v-avatar>
+
+            <div class="user-info">
+              <div class="user-name">
+                {{ item.name || "Unknown User" }}
+              </div>
+
+              <div class="user-id">User ID {{ item.user_id }}</div>
+            </div>
+          </div>
+        </template>
+
+        <!-- =====================================================
+             CARD NUMBER
+        ====================================================== -->
+        <template #[`item.card_no`]="{ item }">
+          <v-chip
+            v-if="hasCard(item.card_no)"
+            size="small"
+            variant="tonal"
+            color="blue-grey"
+          >
+            <v-icon start size="14"> mdi-card-account-details-outline </v-icon>
+
+            {{ item.card_no }}
+          </v-chip>
+
+          <span v-else class="no-card">
+            <v-icon size="15" class="me-1"> mdi-card-off-outline </v-icon>
+
+            Not assigned
+          </span>
+        </template>
+
+        <!-- =====================================================
+             ROLE
+        ====================================================== -->
+        <template #[`item.role`]="{ item }">
+          <v-chip size="small" variant="tonal" :color="getRoleColor(item.role)">
+            <v-icon start size="14">
+              {{
+                String(item.role) === "14"
+                  ? "mdi-shield-account-outline"
+                  : "mdi-account-outline"
+              }}
+            </v-icon>
+
+            {{ formatRole(item.role) }}
+          </v-chip>
+        </template>
+
+        <!-- =====================================================
+             ACTION
+        ====================================================== -->
+        <template #[`item.actions`]="{ item }">
+          <div class="d-flex justify-center">
+            <v-btn
+              :to="`/users/${item.user_id}`"
+              variant="tonal"
+              size="small"
+              color="primary"
+              prepend-icon="mdi-eye-outline"
+              class="view-button"
+            >
+              View
+            </v-btn>
+          </div>
+        </template>
+
+        <!-- =====================================================
+             EMPTY STATE
+        ====================================================== -->
+        <template #no-data>
+          <div class="empty-state">
+            <div class="empty-icon">
+              <v-icon size="36"> mdi-account-search-outline </v-icon>
+            </div>
+
+            <div class="empty-title">No users found</div>
+
+            <div class="empty-description">
+              Try changing your search keyword.
+            </div>
+          </div>
+        </template>
       </v-data-table>
     </v-card>
-
-
-    <!-- <v-dialog max-width="1000" v-model="addShiftDialog" scrollable persistent>
-      <v-card elevation="0">
-        <v-toolbar color="primary" density="compact">
-          <v-icon class="ml-4">mdi-account-group</v-icon>
-          <v-toolbar-title> Add Shift</v-toolbar-title>
-          <v-spacer></v-spacer>
-          <v-btn icon @click="addShiftDialog = false">
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-        </v-toolbar>
-        <div class="ma-5">
-          <v-row dense>
-            <v-col cols="2">UID:</v-col>
-            <v-col cols="10">{{ userDetails.user_id }}</v-col>
-          </v-row>
-          <v-row dense>
-            <v-col cols="2">NAME:</v-col>
-            <v-col cols="10">{{ userDetails.name }}</v-col>
-          </v-row>
-        </div>
-        <v-divider></v-divider>
-        <v-card-text>
-          <v-row>
-            <v-col cols="12" md="4">
-              <v-form v-model="valid" ref="createShiftForm" lazy-validation>
-                <v-select label="Day" v-model="shiftName" prepend-inner-icon="mdi-calendar" :rules="rules.shiftName"
-                  :items="['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']" variant="solo-filled"
-                  flat></v-select>
-                <v-text-field v-model="timeIn" :active="menu_in" label="Time In" :rules="rules.timeIn"
-                  prepend-inner-icon="mdi-clock-time-four-outline" readonly variant="solo-filled" flat>
-                  <v-menu v-model="menu_in" :close-on-content-click="false" activator="parent"
-                    transition="scale-transition">
-                    <v-time-picker v-if="menu_in" v-model="timeIn" full-width format="24hr" use-seconds></v-time-picker>
-                  </v-menu>
-                </v-text-field>
-                <v-text-field v-model="timeOut" :active="menu_out" label="Time Out" :rules="rules.TimeOut"
-                  prepend-inner-icon="mdi-clock-time-four-outline" readonly variant="solo-filled" flat>
-                  <v-menu v-model="menu_out" :close-on-content-click="false" activator="parent"
-                    transition="scale-transition">
-                    <v-time-picker v-if="menu_out" v-model="timeOut" full-width format="24hr"
-                      use-seconds></v-time-picker>
-                  </v-menu>
-                </v-text-field>
-                <v-text-field v-model="gracePeriod" label="Grace Period (minutes)" type="number"
-                  :rules="rules.gracePeriod" prepend-inner-icon="mdi-timer-sand-complete" variant="solo-filled" flat>
-                </v-text-field>
-                <v-btn color="primary" block variant="flat" @click="addShift()" v-if="!isUpdate">Save</v-btn>
-                <v-row v-else>
-                  <v-col cols="12" md="6"><v-btn color="primary" block variant="flat"
-                      @click="updateShift()">Save</v-btn></v-col>
-                  <v-col cols="12" md="6"><v-btn color="warning" block variant="flat"
-                      @click="cancelShift()">Cancel</v-btn></v-col>
-                </v-row>
-              </v-form>
-            </v-col>
-            <v-col cols="12" md="8">
-              <v-data-table density="compact" :headers="shiftHeaders" :items="shiftList" :loading="loading">
-                <template v-slot:[`item.actions`]="{ item }">
-                  <v-btn variant="text" size="small" color="blue" class="mr-2"
-                    @click="editShift(item)"><v-icon>mdi-pencil</v-icon></v-btn>
-                </template>
-              </v-data-table>
-            </v-col>
-          </v-row>
-        </v-card-text>
-      </v-card>
-    </v-dialog> -->
-
-
-    <!-- SNACKBAR -->
-    <v-snackbar
-      v-model="shiftSnackbar"
-      :color="snackbarColor"
-      location="top"
-    >
-    <v-icon start>{{ snackbarIcon }}</v-icon>
-      {{ snackbarText }}
-
-      <template v-slot:actions>
-        <v-btn icon @click="shiftSnackbar = false" size="small">
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-      </template>
-    </v-snackbar>
   </div>
 </template>
 
-<script setup>
-const loading = ref(true)
-const addShiftDialog = ref(false);
-const search = ref(null);
-const createShiftForm = ref(null);
-const isUpdate = ref(false)
-const valid = ref(true)
-const shiftSnackbar = ref(false);
-const snackbarText = ref("")
-const snackbarColor = ref(null)
-const snackbarIcon = ref(null);
-const headers = ref([
-  {
-    title: "User ID",
-    sortable: true,
-    key: "user_id",
-  },
-  { title: "Name", key: "name", sortable: false },
-  { title: "Card No", key: "card_no", sortable: false },
-  { title: "Role", key: "role", sortable: false },
-  { title: "", key: "actions", align: "center", sortable: false },
-]);
-const shiftHeaders = ref([
-  {
-    title: "User ID",
-    sortable: true,
-    key: "user_id",
-  },
-  { title: "Shift Name", key: "shift_name", sortable: false },
-  { title: "Shift Start", key: "shift_start", sortable: false },
-  { title: "Shift End", key: "shift_end", sortable: false },
-  { title: "Grace Period", key: "grace_period_minutes", sortable: false },
-  { title: "", key: "actions", align: "center", sortable: false },
-]);
-const rules = ref({
-  shiftName: [(v) => !!v || "Shift Name is required"],
-  timeIn: [(v) => !!v || "Time in is required"],
-  TimeOut: [(v) => !!v || "Time out is required"],
-  gracePeriod: [(v) => !!v || "Grace period is required"],
-})
-const userAccountList = ref([]);
-const shiftList = ref([]);
-const userDetails = ref({})
-const userID = ref(null)
-const shiftName = ref("")
-const timeIn = ref("")
-const menu_in = ref(false)
-const timeOut = ref(null)
-const menu_out = ref(false)
-const gracePeriod = ref(15);
-const weekday = ref(null);
-const documentID = ref("");
+<script setup lang="ts">
+//@ts-nocheck
+/*
+|--------------------------------------------------------------------------
+| Types
+|--------------------------------------------------------------------------
+*/
 
-async function initialize() {
+interface UserAccount {
+  user_id: number;
+  uid?: number | null;
+  name?: string | null;
+  card_no?: string | number | null;
+  role?: string | number | null;
+}
+
+/*
+|--------------------------------------------------------------------------
+| State
+|--------------------------------------------------------------------------
+*/
+
+const userAccountList = ref<UserAccount[]>([]);
+
+const loading = ref(true);
+
+const refreshing = ref(false);
+
+const search = ref("");
+
+const errorMessage = ref("");
+
+/*
+|--------------------------------------------------------------------------
+| Table Headers
+|--------------------------------------------------------------------------
+*/
+
+const headers = [
+  {
+    title: "User",
+    key: "name",
+    sortable: true,
+  },
+
+  {
+    title: "Card Number",
+    key: "card_no",
+    sortable: true,
+    width: 220,
+  },
+
+  {
+    title: "Role",
+    key: "role",
+    sortable: true,
+    width: 180,
+  },
+
+  {
+    title: "",
+    key: "actions",
+    sortable: false,
+    align: "center" as const,
+    width: 120,
+  },
+];
+
+/*
+|--------------------------------------------------------------------------
+| Summary
+|--------------------------------------------------------------------------
+*/
+
+const usersWithCard = computed(() => {
+  return userAccountList.value.filter((user) => hasCard(user.card_no)).length;
+});
+
+const usersWithoutCard = computed(() => {
+  return userAccountList.value.length - usersWithCard.value;
+});
+
+const roleCount = computed(() => {
+  const roles = new Set(
+    userAccountList.value
+      .map((user) =>
+        String(user.role ?? "")
+          .trim()
+          .toLowerCase(),
+      )
+      .filter(Boolean),
+  );
+
+  return roles.size;
+});
+
+/*
+|--------------------------------------------------------------------------
+| Fetch Users
+|--------------------------------------------------------------------------
+*/
+
+const initialize = async (showLoader = true) => {
+  if (showLoader) {
+    loading.value = true;
+  } else {
+    refreshing.value = true;
+  }
+
   try {
-    let result = await $fetch(`/api/user-accounts/list`);
-    if (result) {
-      userAccountList.value = result;
-      loading.value = false
-      //console.log(result);
-    }
-  } catch (err) {
-    console.error("Failed to fetch data: ", err);
+    const result = await $fetch<UserAccount[]>("/api/user-accounts/list");
+
+    userAccountList.value = result ?? [];
+
+    errorMessage.value = "";
+  } catch (error) {
+    console.error("Failed to fetch users:", error);
+
+    errorMessage.value = "Unable to load user accounts.";
+  } finally {
     loading.value = false;
-    throw err;
+
+    refreshing.value = false;
   }
-}
+};
 
-async function getShift() {
-  try {
-    //console.log("User ID: ", userID.value)
-    let result = await $fetch(`/api/shift-type/list/${userID.value}`);
-    if (result) {
-      shiftList.value = result;
-      //console.log(result)
-    }
-  } catch (err) {
-    console.error("Failed to fetch data: ", err);
-    throw err;
+/*
+|--------------------------------------------------------------------------
+| Has Card
+|--------------------------------------------------------------------------
+*/
+
+const hasCard = (card?: string | number | null) => {
+  if (card === null || card === undefined) {
+    return false;
   }
-}
 
-async function addShiftDialogBox(item) {
-  //console.log(item);
-  userID.value = item.user_id;
-  userDetails.value = item;
-  addShiftDialog.value = true;
-  getShift();
-}
+  const value = String(card).trim();
 
-async function addShift() {
-  const { valid, errors } = await createShiftForm.value?.validate();
-  if (valid) {
-    const week = shiftName.value;
-    switch (week) {
-      case 'Monday':
-        console.log('1');
-        weekday.value = 1;
-        break;
-      case 'Tuesday':
-        console.log("2");
-        weekday.value = 2;
-        break;
-      case 'Wednesday':
-        console.log("3");
-        weekday.value = 3;
-        break;
-      case 'Thursday':
-        console.log("4");
-        weekday.value = 4;
-        break;
-      case 'Friday':
-        console.log('5');
-        weekday.value = 5;
-        break;
-      case 'Saturday':
-        console.log("6");
-        weekday.value = 6;
-        break;
-      default:
-        console.log("No Record Found");
-    }
-    const payload = {
-      user_id: userID.value,
-      shift_name: shiftName.value,
-      shift_start: timeIn.value,
-      shift_end: timeOut.value,
-      grace_period: parseInt(gracePeriod.value),
-      weekday: weekday.value,
-      is_active: true
-    };
-    //console.log("Time Log: ", payload)
-    await $fetch('/api/shift-type/create', {
-      method: "POST",
-      body: payload
-    }).then(response => {
-      //console.log("Response: ", response)
-      if (response.status == "fail") {
-        //alert(response.message);
-        console.log(response.message)
-        snackbarText.value = response.message;
-        snackbarColor.value = "warning"
-        snackbarIcon.value = 'mdi-alert'
-        shiftSnackbar.value = true
+  return value !== "" && value !== "0";
+};
 
-      } else {
-        console.log("Shift created successfully")
-        snackbarText.value = "Shift created successfully";
-        snackbarColor.value = "success"
-        snackbarIcon.value = 'mdi-check-circle'
-        shiftSnackbar.value = true
-        //createShiftForm.value?.reset();
-        gracePeriod.value = 15
-        getShift()
-      }
-    })
+/*
+|--------------------------------------------------------------------------
+| User Initials
+|--------------------------------------------------------------------------
+*/
+
+const getInitials = (name?: string | null) => {
+  if (!name) {
+    return "?";
   }
-}
 
-async function editShift(item) {
-  console.log(item)
-  isUpdate.value = true
-  documentID.value = item.documentId;
-  shiftName.value = item.shift_name;
-  timeIn.value = item.shift_start;
-  timeOut.value = item.shift_end;
-  gracePeriod.value = item.grace_period_minutes;
-}
+  const parts = name.trim().split(/\s+/);
 
-async function cancelShift() {
-  createShiftForm.value?.reset();
-  gracePeriod.value = 15;
-  isUpdate.value = false
-}
-
-async function updateShift() {
-  const { valid, errors } = await createShiftForm.value?.validate();
-  if (valid) {
-    const payload = {
-      //document_id: documentID.value,
-      user_id: userID.value,
-      shift_name: shiftName.value,
-      shift_start: timeIn.value,
-      shift_end: timeOut.value,
-      grace_period: parseInt(gracePeriod.value),
-      //weekday: weekday.value,
-      is_active: true
-    };
-    console.log(payload)
-
-    await $fetch(`/api/shift-type/update/${documentID.value}`, {
-      method: 'PUT',
-      body: payload
-  }).then(response => {
-    if (response.status == "fail") {
-        //alert(response.message);
-        console.log(response.message)
-        snackbarText.value = response.message;
-        snackbarColor.value = "warning"
-        snackbarIcon.value = 'mdi-alert'
-        shiftSnackbar.value = true
-
-      } else {
-        console.log("Shift update successfully")
-        snackbarText.value = `${shiftName.value} shift updated sucessfully`;
-        snackbarColor.value = "success"
-        snackbarIcon.value = 'mdi-check-circle'
-        shiftSnackbar.value = true
-        //createShiftForm.value?.reset();
-        //gracePeriod.value = 15
-        getShift()
-      }
-  })
+  if (parts.length === 1) {
+    return parts[0].substring(0, 2).toUpperCase();
   }
-}
+
+  return (
+    (parts[0]?.[0] ?? "") + (parts[parts.length - 1]?.[0] ?? "")
+  ).toUpperCase();
+};
+
+/*
+|--------------------------------------------------------------------------
+| Role
+|--------------------------------------------------------------------------
+*/
+
+const formatRole = (role?: string | number | null) => {
+  if (role === null || role === undefined || String(role).trim() === "") {
+    return "User";
+  }
+
+  const value = String(role).trim();
+
+  /*
+  |--------------------------------------------------------------------------
+  | ZKTeco Role Codes
+  |--------------------------------------------------------------------------
+  |
+  | 0  = Normal User
+  | 14 = Administrator / Super Admin
+  |
+  */
+
+  if (value === "0") {
+    return "User";
+  }
+
+  if (value === "14") {
+    return "Administrator";
+  }
+
+  /*
+   * If the API later returns text roles
+   * such as employee, faculty, admin, etc.
+   */
+  if (!/^\d+$/.test(value)) {
+    return value
+      .replace(/[_-]/g, " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+  }
+
+  /*
+   * Unknown biometric role code.
+   */
+  return `Role ${value}`;
+};
+
+const getRoleColor = (role?: string | number | null) => {
+  const value = String(role ?? "")
+    .trim()
+    .toLowerCase();
+
+  /*
+   * ZKTeco normal user
+   */
+  if (value === "0") {
+    return "success";
+  }
+
+  /*
+   * ZKTeco administrator
+   */
+  if (value === "14") {
+    return "purple";
+  }
+
+  /*
+   * Text-based roles
+   */
+  if (value.includes("admin")) {
+    return "purple";
+  }
+
+  if (value.includes("teacher") || value.includes("faculty")) {
+    return "primary";
+  }
+
+  if (
+    value.includes("employee") ||
+    value.includes("staff") ||
+    value.includes("user")
+  ) {
+    return "success";
+  }
+
+  return "blue-grey";
+};
+
+/*
+|--------------------------------------------------------------------------
+| Lifecycle
+|--------------------------------------------------------------------------
+*/
 
 onMounted(async () => {
-  await initialize();
-
-})
-
+  await initialize(true);
+});
 </script>
 
 <style scoped>
-:deep() .v-table .v-table__wrapper>table>thead>tr>th {
-  border-right: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
-  border-bottom: thick solid rgba(var(--v-border-color), var(--v-border-opacity));
-  font-weight: bold;
-  /* background-color: #04aa6d;
-  color: white; */
+/* =========================================================
+   PAGE
+========================================================= */
+
+.users-page {
+  min-height: 100%;
+  padding: 24px;
+  background: #f7f8fa;
 }
 
-:deep() .v-table .v-table__wrapper>table>tbody>tr>td:not(:last-child),
-.v-table .v-table__wrapper>table>tbody>tr>th:not(:last-child) {
-  border-right: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
+/* =========================================================
+   PAGE HEADER
+========================================================= */
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
 }
 
-:deep() .v-table .v-table__wrapper>table>tbody>tr:nth-child(even) {
-  background-color: #f2f2f2;
+.page-title {
+  margin: 0;
+
+  color: #1f2937;
+
+  font-size: 1.55rem;
+  font-weight: 750;
+  line-height: 1.2;
 }
 
-:deep() .v-table .v-table__wrapper>table>tbody>tr:hover {
-  background-color: #f2f2f2;
+.page-subtitle {
+  margin: 0;
+
+  color: #6b7280;
+
+  font-size: 0.9rem;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+}
+
+/* =========================================================
+   SUMMARY CARDS
+========================================================= */
+
+.summary-card {
+  height: 100%;
+
+  border: 1px solid #e7e9ed;
+  border-radius: 14px;
+
+  background: #ffffff;
+
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.summary-card:hover {
+  transform: translateY(-2px);
+
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+}
+
+.summary-label {
+  color: #6b7280;
+
+  font-size: 0.76rem;
+  font-weight: 700;
+
+  letter-spacing: 0.04em;
+
+  text-transform: uppercase;
+}
+
+.summary-value {
+  margin-top: 5px;
+
+  color: #1f2937;
+
+  font-size: 2rem;
+  font-weight: 750;
+  line-height: 1.1;
+}
+
+.summary-description {
+  margin-top: 5px;
+
+  color: #9ca3af;
+
+  font-size: 0.75rem;
+}
+
+.summary-icon {
+  width: 44px;
+  height: 44px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 12px;
+}
+
+.icon-primary {
+  color: #15803d;
+  background: #ecfdf5;
+}
+
+.icon-info {
+  color: #2563eb;
+  background: #eff6ff;
+}
+
+.icon-warning {
+  color: #d97706;
+  background: #fffbeb;
+}
+
+.icon-success {
+  color: #16a34a;
+  background: #ecfdf5;
+}
+
+/* =========================================================
+   USER CARD
+========================================================= */
+
+.users-card {
+  overflow: hidden;
+
+  border: 1px solid #e7e9ed;
+  border-radius: 14px;
+
+  background: #ffffff;
+}
+
+/* =========================================================
+   TOOLBAR
+========================================================= */
+
+.table-toolbar {
+  min-height: 76px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  padding: 16px 20px;
+}
+
+.section-title {
+  color: #1f2937;
+
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.section-subtitle {
+  margin-top: 2px;
+
+  color: #9ca3af;
+
+  font-size: 0.8rem;
+}
+
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+}
+
+.search-field {
+  width: 300px;
+}
+
+/* =========================================================
+   TABLE
+========================================================= */
+
+:deep(.users-table thead th) {
+  height: 50px !important;
+
+  padding-left: 14px !important;
+  padding-right: 14px !important;
+
+  background: #fafafa !important;
+
+  border-bottom: 1px solid #e5e7eb !important;
+
+  color: #4b5563 !important;
+
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+
+  letter-spacing: 0.025em;
+
+  text-transform: uppercase;
+}
+
+:deep(.users-table tbody td) {
+  height: 64px !important;
+
+  padding-left: 14px !important;
+  padding-right: 14px !important;
+
+  border-bottom: 1px solid #f0f1f3 !important;
+
+  color: #374151;
+
+  font-size: 0.84rem;
+}
+
+:deep(.users-table tbody tr) {
+  transition: background-color 0.15s ease;
+}
+
+:deep(.users-table tbody tr:hover) {
+  background: #f8faf9 !important;
+}
+
+/* =========================================================
+   USER
+========================================================= */
+
+.user-cell {
+  display: flex;
+  align-items: center;
+
+  gap: 11px;
+}
+
+.user-info {
+  min-width: 0;
+}
+
+.user-name {
+  color: #1f2937;
+
+  font-weight: 650;
+}
+
+.user-id {
+  margin-top: 2px;
+
+  color: #9ca3af;
+
+  font-size: 0.69rem;
+}
+
+.avatar-text {
+  color: #15803d;
+
+  font-size: 0.7rem;
+  font-weight: 750;
+}
+
+/* =========================================================
+   CARD NUMBER
+========================================================= */
+
+.no-card {
+  display: flex;
+  align-items: center;
+
+  color: #9ca3af;
+
+  font-size: 0.76rem;
+}
+
+/* =========================================================
+   ACTION
+========================================================= */
+
+.view-button {
+  text-transform: none;
+}
+
+/* =========================================================
+   EMPTY STATE
+========================================================= */
+
+.empty-state {
+  padding: 64px 20px;
+
+  text-align: center;
+}
+
+.empty-icon {
+  width: 68px;
+  height: 68px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin: 0 auto 14px;
+
+  border-radius: 50%;
+
+  background: #f3f4f6;
+
+  color: #9ca3af;
+}
+
+.empty-title {
+  color: #374151;
+
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.empty-description {
+  margin-top: 5px;
+
+  color: #9ca3af;
+
+  font-size: 0.8rem;
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 960px) {
+  .users-page {
+    padding: 16px;
+  }
+
+  .page-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .table-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .toolbar-actions {
+    width: 100%;
+  }
+
+  .search-field {
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .users-page {
+    padding: 10px;
+  }
+
+  .page-title {
+    font-size: 1.3rem;
+  }
+
+  .header-actions {
+    width: 100%;
+  }
+
+  .header-actions .v-btn {
+    width: 100%;
+  }
+
+  .user-name {
+    max-width: 180px;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 </style>

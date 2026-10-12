@@ -8,72 +8,28 @@ export interface ZKTecoUser {
   userId: string | number;
 }
 
-export async function syncZktecoUsers(
-  users: ZKTecoUser[]
-) {
+export async function syncZktecoUsers(users: ZKTecoUser[]) {
   console.log("");
   console.log("=================================");
-  console.log("Starting User Database Sync");
+  console.log("Synchronizing ZKTeco Users");
   console.log("=================================");
 
-  console.log(`Users received: ${users.length}`);
-
-  let insertedCount = 0;
-  let updatedCount = 0;
-  let skippedCount = 0;
-  let errorCount = 0;
-
+  let processed = 0;
+  let skipped = 0;
+  let errors = 0;
   for (const user of users) {
     try {
-      const {
-        uid,
-        role,
-        name,
-        cardno,
-        userId,
-      } = user;
-
-      if (
-        userId === undefined ||
-        userId === null ||
-        userId === ""
-      ) {
-        console.warn(
-          "Skipping user without userId:",
-          user
-        );
-
-        skippedCount++;
-
+      const userId = Number(user.userId);
+      if (Number.isNaN(userId)) {
+        console.warn("Invalid ZKTeco user ID:", user.userId);
+        skipped++;
         continue;
       }
-
-      const numericUserId = Number(userId);
-
-      if (Number.isNaN(numericUserId)) {
-        console.warn(
-          "Skipping invalid userId:",
-          userId
-        );
-
-        skippedCount++;
-
-        continue;
-      }
-
-      const existing = await query(
-        `
-        SELECT id
-        FROM public.user_accounts
-        WHERE user_id = $1
-        LIMIT 1
-        `,
-        [numericUserId]
-      );
-
       await query(
         `
-        INSERT INTO public.user_accounts (
+        INSERT INTO
+          public.user_accounts
+        (
           uid,
           role,
           name,
@@ -81,6 +37,7 @@ export async function syncZktecoUsers(
           user_id,
           created_at
         )
+
         VALUES (
           $1,
           $2,
@@ -90,48 +47,62 @@ export async function syncZktecoUsers(
           CURRENT_TIMESTAMP
         )
 
-        ON CONFLICT (user_id)
-
+        ON CONFLICT (
+          user_id
+        )
         DO UPDATE SET
-          uid = EXCLUDED.uid,
-          role = EXCLUDED.role,
-          name = EXCLUDED.name,
-          card_no = EXCLUDED.card_no
+          uid =
+            EXCLUDED.uid,
+          role =
+            EXCLUDED.role,
+          name =
+            EXCLUDED.name,
+          card_no =
+            EXCLUDED.card_no
         `,
         [
-          uid,
-          role,
-          name ?? "",
-          cardno ?? null,
-          numericUserId,
-        ]
+          Number(user.uid),
+          user.role,
+          user.name ?? "",
+          user.cardno ?? null,
+          userId,
+        ],
       );
 
-      if (existing.length === 0) {
-        insertedCount++;
-      } else {
-        updatedCount++;
-      }
+      processed++;
     } catch (error) {
-      errorCount++;
-
-      console.error(
-        "Failed to synchronize user:",
-        user
-      );
-
-      console.error(error);
+      errors++;
+      console.error("User synchronization error:", user, error);
     }
   }
 
-  console.log("");
-  console.log("User Sync Complete");
-  console.log("-------------------------");
-  console.log(`Received : ${users.length}`);
-  console.log(`Inserted : ${insertedCount}`);
-  console.log(`Updated  : ${updatedCount}`);
-  console.log(`Skipped  : ${skippedCount}`);
-  console.log(`Errors   : ${errorCount}`);
-  console.log("-------------------------");
+  /*
+   * Real-time logs don't always
+   * provide the internal ZKTeco UID.
+   *
+   * If an attendance record has a
+   * null device_uid, fill it using
+   * the user_accounts mapping.
+   */
+
+  await query(
+    `
+    UPDATE
+      public.attendance_logs AS a
+    SET
+      device_uid = u.uid
+    FROM
+      public.user_accounts AS u
+    WHERE
+      a.user_id = u.user_id
+      AND
+      a.device_uid IS NULL
+    `,
+  );
+
+  console.log(`Users processed : ${processed}`);
+  console.log(`Users skipped   : ${skipped}`);
+  console.log(`Errors          : ${errors}`);
+  console.log("=================================");
   console.log("");
 }
