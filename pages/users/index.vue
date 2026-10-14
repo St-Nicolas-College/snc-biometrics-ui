@@ -3,25 +3,44 @@
     <!-- =========================================================
          PAGE HEADER
     ========================================================== -->
-    <div class="page-header mb-6">
-      <div>
-        <div class="d-flex align-center ga-2 mb-1">
-          <v-icon color="primary" size="28"> mdi-account-group-outline </v-icon>
-
-          <h1 class="page-title">Users</h1>
+    <div class="page-header">
+      <div class="page-heading">
+        <div class="page-heading-icon">
+          <v-icon size="23">
+            mdi-account-group-outline
+          </v-icon>
         </div>
 
-        <p class="page-subtitle">
-          View biometric users registered in the attendance system.
-        </p>
+        <div>
+          <h1 class="page-title">
+            Users
+          </h1>
+
+          <p class="page-subtitle">
+            Manage biometric users registered in the attendance system.
+          </p>
+        </div>
       </div>
 
       <div class="header-actions">
+        <div
+          v-if="lastUpdated"
+          class="updated-status"
+        >
+          <v-icon size="15">
+            mdi-clock-outline
+          </v-icon>
+
+          Updated
+          {{ formatLastUpdated(lastUpdated) }}
+        </div>
+
         <v-btn
           color="primary"
           variant="tonal"
           prepend-icon="mdi-refresh"
           :loading="refreshing"
+          class="refresh-header-button"
           @click="initialize(false)"
         >
           Refresh
@@ -30,98 +49,254 @@
     </div>
 
     <!-- =========================================================
+         DIRECTORY OVERVIEW
+    ========================================================== -->
+    <div class="directory-overview">
+      <div class="overview-icon">
+        <v-icon size="21">
+          mdi-fingerprint
+        </v-icon>
+      </div>
+
+      <div class="overview-content">
+        <div class="overview-label">
+          Biometric User Directory
+        </div>
+
+        <div class="overview-description">
+          ZKTeco registered users and card assignments
+        </div>
+      </div>
+
+      <div class="overview-spacer" />
+
+      <div class="overview-stat">
+        <span class="overview-stat-value">
+          {{ userAccountList.length }}
+        </span>
+
+        <span class="overview-stat-label">
+          Registered
+        </span>
+      </div>
+
+      <div class="overview-divider" />
+
+      <div class="overview-stat">
+        <span class="overview-stat-value text-success">
+          {{ cardCoveragePercent }}%
+        </span>
+
+        <span class="overview-stat-label">
+          Card Coverage
+        </span>
+      </div>
+    </div>
+
+    <!-- =========================================================
          SUMMARY CARDS
     ========================================================== -->
-    <v-row class="mb-5">
+    <v-row class="summary-row">
       <!-- Total Users -->
-      <v-col cols="12" sm="6" lg="3">
-        <v-card elevation="0" class="summary-card">
-          <v-card-text>
-            <div class="d-flex justify-space-between align-start">
-              <div>
-                <div class="summary-label">Total Users</div>
-
-                <div class="summary-value">
-                  {{ userAccountList.length }}
-                </div>
-
-                <div class="summary-description">
-                  Registered biometric users
-                </div>
+      <v-col
+        cols="12"
+        sm="6"
+        lg="3"
+      >
+        <v-card
+          elevation="0"
+          class="summary-card"
+          :class="{
+            'summary-card-selected':
+              cardFilter === 'all' &&
+              roleFilter === 'all'
+          }"
+          @click="showAllUsers"
+        >
+          <v-card-text class="summary-content">
+            <div class="summary-top">
+              <div class="summary-icon icon-total">
+                <v-icon size="21">
+                  mdi-account-group-outline
+                </v-icon>
               </div>
 
-              <div class="summary-icon icon-primary">
-                <v-icon> mdi-account-group-outline </v-icon>
+              <div class="summary-tag">
+                DIRECTORY
               </div>
+            </div>
+
+            <div class="summary-value">
+              {{ userAccountList.length }}
+            </div>
+
+            <div class="summary-label">
+              Total Users
+            </div>
+
+            <div class="summary-description">
+              Registered biometric users
+            </div>
+
+            <div class="summary-footer">
+              <span>View all users</span>
+
+              <v-icon size="15">
+                mdi-arrow-right
+              </v-icon>
             </div>
           </v-card-text>
         </v-card>
       </v-col>
 
       <!-- With Card -->
-      <v-col cols="12" sm="6" lg="3">
-        <v-card elevation="0" class="summary-card">
-          <v-card-text>
-            <div class="d-flex justify-space-between align-start">
-              <div>
-                <div class="summary-label">With Card</div>
-
-                <div class="summary-value text-primary">
-                  {{ usersWithCard }}
-                </div>
-
-                <div class="summary-description">Users with card number</div>
+      <v-col
+        cols="12"
+        sm="6"
+        lg="3"
+      >
+        <v-card
+          elevation="0"
+          class="summary-card"
+          :class="{
+            'summary-card-selected':
+              cardFilter === 'with-card'
+          }"
+          @click="cardFilter = 'with-card'"
+        >
+          <v-card-text class="summary-content">
+            <div class="summary-top">
+              <div class="summary-icon icon-card">
+                <v-icon size="21">
+                  mdi-card-account-details-outline
+                </v-icon>
               </div>
 
-              <div class="summary-icon icon-info">
-                <v-icon> mdi-card-account-details-outline </v-icon>
+              <div class="summary-tag summary-tag-blue">
+                ASSIGNED
               </div>
+            </div>
+
+            <div class="summary-value summary-value-blue">
+              {{ usersWithCard }}
+            </div>
+
+            <div class="summary-label">
+              With Card
+            </div>
+
+            <div class="summary-description">
+              Users with card numbers
+            </div>
+
+            <div class="summary-progress">
+              <div
+                class="summary-progress-bar progress-blue"
+                :style="{
+                  width: `${cardCoveragePercent}%`
+                }"
+              />
             </div>
           </v-card-text>
         </v-card>
       </v-col>
 
       <!-- Without Card -->
-      <v-col cols="12" sm="6" lg="3">
-        <v-card elevation="0" class="summary-card">
-          <v-card-text>
-            <div class="d-flex justify-space-between align-start">
-              <div>
-                <div class="summary-label">Without Card</div>
-
-                <div class="summary-value text-warning">
-                  {{ usersWithoutCard }}
-                </div>
-
-                <div class="summary-description">No card number assigned</div>
+      <v-col
+        cols="12"
+        sm="6"
+        lg="3"
+      >
+        <v-card
+          elevation="0"
+          class="summary-card"
+          :class="{
+            'summary-card-selected':
+              cardFilter === 'without-card'
+          }"
+          @click="cardFilter = 'without-card'"
+        >
+          <v-card-text class="summary-content">
+            <div class="summary-top">
+              <div class="summary-icon icon-no-card">
+                <v-icon size="21">
+                  mdi-card-off-outline
+                </v-icon>
               </div>
 
-              <div class="summary-icon icon-warning">
-                <v-icon> mdi-card-off-outline </v-icon>
+              <div class="summary-tag summary-tag-warning">
+                REVIEW
               </div>
+            </div>
+
+            <div class="summary-value text-warning">
+              {{ usersWithoutCard }}
+            </div>
+
+            <div class="summary-label">
+              Without Card
+            </div>
+
+            <div class="summary-description">
+              No card number assigned
+            </div>
+
+            <div class="summary-footer">
+              <span>Review missing cards</span>
+
+              <v-icon size="15">
+                mdi-arrow-right
+              </v-icon>
             </div>
           </v-card-text>
         </v-card>
       </v-col>
 
       <!-- Roles -->
-      <v-col cols="12" sm="6" lg="3">
-        <v-card elevation="0" class="summary-card">
-          <v-card-text>
-            <div class="d-flex justify-space-between align-start">
-              <div>
-                <div class="summary-label">Roles</div>
-
-                <div class="summary-value">
-                  {{ roleCount }}
-                </div>
-
-                <div class="summary-description">User role classifications</div>
+      <v-col
+        cols="12"
+        sm="6"
+        lg="3"
+      >
+        <v-card
+          elevation="0"
+          class="summary-card"
+        >
+          <v-card-text class="summary-content">
+            <div class="summary-top">
+              <div class="summary-icon icon-role">
+                <v-icon size="21">
+                  mdi-account-key-outline
+                </v-icon>
               </div>
 
-              <div class="summary-icon icon-success">
-                <v-icon> mdi-account-key-outline </v-icon>
+              <div class="summary-tag summary-tag-green">
+                ACCESS
               </div>
+            </div>
+
+            <div class="summary-value">
+              {{ roleCount }}
+            </div>
+
+            <div class="summary-label">
+              User Roles
+            </div>
+
+            <div class="summary-description">
+              Role classifications detected
+            </div>
+
+            <div class="role-preview">
+              <v-chip
+                v-for="role in rolePreview"
+                :key="role.value"
+                size="x-small"
+                variant="tonal"
+                :color="getRoleColor(role.value)"
+              >
+                {{ role.title }}
+              </v-chip>
             </div>
           </v-card-text>
         </v-card>
@@ -131,18 +306,60 @@
     <!-- =========================================================
          USER DIRECTORY
     ========================================================== -->
-    <v-card elevation="0" class="users-card">
-      <!-- Toolbar -->
+    <v-card
+      elevation="0"
+      class="users-card"
+    >
+      <!-- =======================================================
+           TOOLBAR
+      ======================================================== -->
       <div class="table-toolbar">
-        <div>
-          <div class="section-title">User Directory</div>
+        <div class="directory-heading">
+          <div class="directory-heading-icon">
+            <v-icon size="20">
+              mdi-account-box-multiple-outline
+            </v-icon>
+          </div>
 
-          <div class="section-subtitle">
-            Browse and manage biometric user profiles.
+          <div>
+            <div class="section-title">
+              User Directory
+            </div>
+
+            <div class="section-subtitle">
+              Browse biometric profiles, card assignments and roles.
+            </div>
           </div>
         </div>
 
         <div class="toolbar-actions">
+          <!-- Card Filter -->
+          <v-select
+            v-model="cardFilter"
+            :items="cardFilterOptions"
+            item-title="title"
+            item-value="value"
+            density="compact"
+            variant="outlined"
+            hide-details
+            prepend-inner-icon="mdi-card-account-details-outline"
+            class="card-filter"
+          />
+
+          <!-- Role Filter -->
+          <v-select
+            v-model="roleFilter"
+            :items="roleFilterOptions"
+            item-title="title"
+            item-value="value"
+            density="compact"
+            variant="outlined"
+            hide-details
+            prepend-inner-icon="mdi-account-key-outline"
+            class="role-filter"
+          />
+
+          <!-- Search -->
           <v-text-field
             v-model="search"
             density="compact"
@@ -156,13 +373,49 @@
         </div>
       </div>
 
+      <!-- =======================================================
+           RESULTS BAR
+      ======================================================== -->
+      <div class="results-bar">
+        <div class="results-left">
+          <div class="results-icon">
+            <v-icon size="15">
+              mdi-database-outline
+            </v-icon>
+          </div>
+
+          <span>
+            Biometric user records
+          </span>
+        </div>
+
+        <div class="results-right">
+          Showing
+
+          <strong>
+            {{ filteredUsers.length }}
+          </strong>
+
+          of
+
+          <strong>
+            {{ userAccountList.length }}
+          </strong>
+
+          users
+        </div>
+      </div>
+
       <v-divider />
 
-      <!-- Error -->
+      <!-- =======================================================
+           ERROR
+      ======================================================== -->
       <v-alert
         v-if="errorMessage"
         type="error"
         variant="tonal"
+        density="comfortable"
         closable
         class="ma-4"
         @click:close="errorMessage = ''"
@@ -175,8 +428,7 @@
       ======================================================== -->
       <v-data-table
         :headers="headers"
-        :items="userAccountList"
-        :search="search"
+        :items="filteredUsers"
         :loading="loading"
         density="comfortable"
         :items-per-page="20"
@@ -184,7 +436,9 @@
       >
         <!-- Loading -->
         <template #loading>
-          <v-skeleton-loader type="table-row@10" />
+          <v-skeleton-loader
+            type="table-row@10"
+          />
         </template>
 
         <!-- =====================================================
@@ -192,18 +446,38 @@
         ====================================================== -->
         <template #[`item.name`]="{ item }">
           <div class="user-cell">
-            <v-avatar size="38" color="green-lighten-5">
-              <span class="avatar-text">
-                {{ getInitials(item.name) }}
-              </span>
-            </v-avatar>
+            <div class="user-avatar">
+              {{ getInitials(item.name) }}
+            </div>
 
             <div class="user-info">
               <div class="user-name">
-                {{ item.name || "Unknown User" }}
+                {{
+                  item.name ||
+                  'Unknown User'
+                }}
               </div>
 
-              <div class="user-id">User ID {{ item.user_id }}</div>
+              <div class="user-metadata">
+                <span>
+                  ID {{ item.user_id }}
+                </span>
+
+                <template
+                  v-if="
+                    item.uid !== null &&
+                    item.uid !== undefined
+                  "
+                >
+                  <span class="metadata-dot">
+                    •
+                  </span>
+
+                  <span>
+                    UID {{ item.uid }}
+                  </span>
+                </template>
+              </div>
             </div>
           </div>
         </template>
@@ -212,35 +486,64 @@
              CARD NUMBER
         ====================================================== -->
         <template #[`item.card_no`]="{ item }">
-          <v-chip
+          <div
             v-if="hasCard(item.card_no)"
-            size="small"
-            variant="tonal"
-            color="blue-grey"
+            class="card-assigned"
           >
-            <v-icon start size="14"> mdi-card-account-details-outline </v-icon>
+            <div class="card-icon card-icon-assigned">
+              <v-icon size="15">
+                mdi-card-account-details-outline
+              </v-icon>
+            </div>
 
-            {{ item.card_no }}
-          </v-chip>
+            <div>
+              <div class="card-number">
+                {{ item.card_no }}
+              </div>
 
-          <span v-else class="no-card">
-            <v-icon size="15" class="me-1"> mdi-card-off-outline </v-icon>
+              <div class="card-status">
+                Assigned
+              </div>
+            </div>
+          </div>
 
-            Not assigned
-          </span>
+          <div
+            v-else
+            class="card-assigned"
+          >
+            <div class="card-icon card-icon-empty">
+              <v-icon size="15">
+                mdi-card-off-outline
+              </v-icon>
+            </div>
+
+            <div>
+              <div class="no-card-title">
+                Not assigned
+              </div>
+
+              <div class="card-status">
+                No card number
+              </div>
+            </div>
+          </div>
         </template>
 
         <!-- =====================================================
              ROLE
         ====================================================== -->
         <template #[`item.role`]="{ item }">
-          <v-chip size="small" variant="tonal" :color="getRoleColor(item.role)">
-            <v-icon start size="14">
-              {{
-                String(item.role) === "14"
-                  ? "mdi-shield-account-outline"
-                  : "mdi-account-outline"
-              }}
+          <v-chip
+            size="small"
+            variant="tonal"
+            :color="getRoleColor(item.role)"
+            class="role-chip"
+          >
+            <v-icon
+              start
+              size="14"
+            >
+              {{ getRoleIcon(item.role) }}
             </v-icon>
 
             {{ formatRole(item.role) }}
@@ -251,16 +554,42 @@
              ACTION
         ====================================================== -->
         <template #[`item.actions`]="{ item }">
-          <div class="d-flex justify-center">
+          <div class="action-cell">
             <v-btn
               :to="`/users/${item.user_id}`"
               variant="tonal"
               size="small"
               color="primary"
-              prepend-icon="mdi-eye-outline"
               class="view-button"
             >
-              View
+              <v-icon
+                start
+                size="16"
+              >
+                mdi-eye-outline
+              </v-icon>
+
+              View Profile
+            </v-btn>
+
+            <v-btn
+              :to="`/users/${item.user_id}`"
+              icon
+              variant="text"
+              size="small"
+              color="grey-darken-1"
+              class="view-icon-button"
+            >
+              <v-icon size="17">
+                mdi-chevron-right
+              </v-icon>
+
+              <v-tooltip
+                activator="parent"
+                location="left"
+              >
+                Open user profile
+              </v-tooltip>
             </v-btn>
           </div>
         </template>
@@ -271,14 +600,31 @@
         <template #no-data>
           <div class="empty-state">
             <div class="empty-icon">
-              <v-icon size="36"> mdi-account-search-outline </v-icon>
+              <v-icon size="36">
+                mdi-account-search-outline
+              </v-icon>
             </div>
 
-            <div class="empty-title">No users found</div>
+            <div class="empty-title">
+              No users found
+            </div>
 
             <div class="empty-description">
-              Try changing your search keyword.
+              Try changing the search keyword,
+              card status, or role filter.
             </div>
+
+            <v-btn
+              v-if="hasActiveFilters"
+              color="primary"
+              variant="tonal"
+              size="small"
+              prepend-icon="mdi-filter-remove-outline"
+              class="mt-4"
+              @click="resetFilters"
+            >
+              Reset Filters
+            </v-btn>
           </div>
         </template>
       </v-data-table>
@@ -287,650 +633,2325 @@
 </template>
 
 <script setup lang="ts">
-//@ts-nocheck
-/*
-|--------------------------------------------------------------------------
-| Types
-|--------------------------------------------------------------------------
-*/
+// @ts-nocheck
+
+/* ==========================================================================
+   TYPES
+============================================================================ */
 
 interface UserAccount {
-  user_id: number;
-  uid?: number | null;
-  name?: string | null;
-  card_no?: string | number | null;
-  role?: string | number | null;
+  user_id: number
+
+  uid?: number | null
+
+  name?: string | null
+
+  card_no?: string | number | null
+
+  role?: string | number | null
 }
 
-/*
-|--------------------------------------------------------------------------
-| State
-|--------------------------------------------------------------------------
-*/
+/* ==========================================================================
+   STATE
+============================================================================ */
 
-const userAccountList = ref<UserAccount[]>([]);
+const userAccountList =
+  ref<UserAccount[]>([])
 
-const loading = ref(true);
+const loading =
+  ref(true)
 
-const refreshing = ref(false);
+const refreshing =
+  ref(false)
 
-const search = ref("");
+const search =
+  ref('')
 
-const errorMessage = ref("");
+const errorMessage =
+  ref('')
 
-/*
-|--------------------------------------------------------------------------
-| Table Headers
-|--------------------------------------------------------------------------
-*/
+const lastUpdated =
+  ref<Date | null>(null)
+
+const cardFilter =
+  ref<
+    'all' |
+    'with-card' |
+    'without-card'
+  >('all')
+
+const roleFilter =
+  ref('all')
+
+/* ==========================================================================
+   TABLE HEADERS
+============================================================================ */
 
 const headers = [
   {
-    title: "User",
-    key: "name",
-    sortable: true,
+    title:
+      'User',
+
+    key:
+      'name',
+
+    sortable:
+      true,
+
+    minWidth:
+      260
   },
 
   {
-    title: "Card Number",
-    key: "card_no",
-    sortable: true,
-    width: 220,
+    title:
+      'Card Number',
+
+    key:
+      'card_no',
+
+    sortable:
+      true,
+
+    minWidth:
+      210
   },
 
   {
-    title: "Role",
-    key: "role",
-    sortable: true,
-    width: 180,
+    title:
+      'Role',
+
+    key:
+      'role',
+
+    sortable:
+      true,
+
+    width:
+      180
   },
 
   {
-    title: "",
-    key: "actions",
-    sortable: false,
-    align: "center" as const,
-    width: 120,
+    title:
+      '',
+
+    key:
+      'actions',
+
+    sortable:
+      false,
+
+    align:
+      'center' as const,
+
+    width:
+      190
+  }
+]
+
+/* ==========================================================================
+   FILTER OPTIONS
+============================================================================ */
+
+const cardFilterOptions = [
+  {
+    title:
+      'All Card Status',
+
+    value:
+      'all'
   },
-];
 
-/*
-|--------------------------------------------------------------------------
-| Summary
-|--------------------------------------------------------------------------
-*/
+  {
+    title:
+      'With Card',
 
-const usersWithCard = computed(() => {
-  return userAccountList.value.filter((user) => hasCard(user.card_no)).length;
-});
+    value:
+      'with-card'
+  },
 
-const usersWithoutCard = computed(() => {
-  return userAccountList.value.length - usersWithCard.value;
-});
+  {
+    title:
+      'Without Card',
 
-const roleCount = computed(() => {
-  const roles = new Set(
-    userAccountList.value
-      .map((user) =>
-        String(user.role ?? "")
-          .trim()
-          .toLowerCase(),
+    value:
+      'without-card'
+  }
+]
+
+/* ==========================================================================
+   HAS CARD
+============================================================================ */
+
+const hasCard =
+  (
+    card?:
+      string |
+      number |
+      null
+  ) => {
+    if (
+      card === null ||
+      card === undefined
+    ) {
+      return false
+    }
+
+    const value =
+      String(
+        card
+      ).trim()
+
+    return (
+      value !== '' &&
+      value !== '0'
+    )
+  }
+
+/* ==========================================================================
+   SUMMARY
+============================================================================ */
+
+const usersWithCard =
+  computed(
+    () => {
+      return userAccountList.value
+        .filter(
+          user =>
+            hasCard(
+              user.card_no
+            )
+        )
+        .length
+    }
+  )
+
+const usersWithoutCard =
+  computed(
+    () => {
+      return (
+        userAccountList.value.length -
+        usersWithCard.value
       )
-      .filter(Boolean),
-  );
+    }
+  )
 
-  return roles.size;
-});
+const roleCount =
+  computed(
+    () => {
+      const roles =
+        new Set(
+          userAccountList.value
+            .map(
+              user =>
+                String(
+                  user.role ??
+                  ''
+                )
+                  .trim()
+                  .toLowerCase()
+            )
+            .filter(
+              Boolean
+            )
+        )
 
-/*
-|--------------------------------------------------------------------------
-| Fetch Users
-|--------------------------------------------------------------------------
-*/
+      return roles.size
+    }
+  )
 
-const initialize = async (showLoader = true) => {
-  if (showLoader) {
-    loading.value = true;
-  } else {
-    refreshing.value = true;
+const cardCoveragePercent =
+  computed(
+    () => {
+      if (
+        userAccountList.value.length ===
+        0
+      ) {
+        return 0
+      }
+
+      return Math.round(
+        (
+          usersWithCard.value /
+          userAccountList.value.length
+        ) *
+        100
+      )
+    }
+  )
+
+/* ==========================================================================
+   ROLE FORMAT
+============================================================================ */
+
+const formatRole =
+  (
+    role?:
+      string |
+      number |
+      null
+  ) => {
+    if (
+      role === null ||
+      role === undefined ||
+      String(
+        role
+      ).trim() === ''
+    ) {
+      return 'User'
+    }
+
+    const value =
+      String(
+        role
+      ).trim()
+
+    /*
+    |--------------------------------------------------------------------------
+    | ZKTeco Roles
+    |--------------------------------------------------------------------------
+    |
+    | 0  = Normal User
+    | 14 = Administrator
+    |
+    */
+
+    if (
+      value === '0'
+    ) {
+      return 'User'
+    }
+
+    if (
+      value === '14'
+    ) {
+      return 'Administrator'
+    }
+
+    /*
+     * Text-based role.
+     */
+
+    if (
+      !/^\d+$/.test(
+        value
+      )
+    ) {
+      return value
+        .replace(
+          /[\_-]/g,
+          ' '
+        )
+        .replace(
+          /\b\w/g,
+          char =>
+            char.toUpperCase()
+        )
+    }
+
+    return (
+      `Role ${value}`
+    )
   }
 
-  try {
-    const result = await $fetch<UserAccount[]>("/api/user-accounts/list");
+/* ==========================================================================
+   ROLE COLOR
+============================================================================ */
 
-    userAccountList.value = result ?? [];
+const getRoleColor =
+  (
+    role?:
+      string |
+      number |
+      null
+  ) => {
+    const value =
+      String(
+        role ??
+        ''
+      )
+        .trim()
+        .toLowerCase()
 
-    errorMessage.value = "";
-  } catch (error) {
-    console.error("Failed to fetch users:", error);
+    if (
+      value === '0'
+    ) {
+      return 'success'
+    }
 
-    errorMessage.value = "Unable to load user accounts.";
-  } finally {
-    loading.value = false;
+    if (
+      value === '14'
+    ) {
+      return 'purple'
+    }
 
-    refreshing.value = false;
-  }
-};
+    if (
+      value.includes(
+        'admin'
+      )
+    ) {
+      return 'purple'
+    }
 
-/*
-|--------------------------------------------------------------------------
-| Has Card
-|--------------------------------------------------------------------------
-*/
+    if (
+      value.includes(
+        'teacher'
+      ) ||
+      value.includes(
+        'faculty'
+      )
+    ) {
+      return 'primary'
+    }
 
-const hasCard = (card?: string | number | null) => {
-  if (card === null || card === undefined) {
-    return false;
-  }
+    if (
+      value.includes(
+        'employee'
+      ) ||
+      value.includes(
+        'staff'
+      ) ||
+      value.includes(
+        'user'
+      )
+    ) {
+      return 'success'
+    }
 
-  const value = String(card).trim();
-
-  return value !== "" && value !== "0";
-};
-
-/*
-|--------------------------------------------------------------------------
-| User Initials
-|--------------------------------------------------------------------------
-*/
-
-const getInitials = (name?: string | null) => {
-  if (!name) {
-    return "?";
-  }
-
-  const parts = name.trim().split(/\s+/);
-
-  if (parts.length === 1) {
-    return parts[0].substring(0, 2).toUpperCase();
-  }
-
-  return (
-    (parts[0]?.[0] ?? "") + (parts[parts.length - 1]?.[0] ?? "")
-  ).toUpperCase();
-};
-
-/*
-|--------------------------------------------------------------------------
-| Role
-|--------------------------------------------------------------------------
-*/
-
-const formatRole = (role?: string | number | null) => {
-  if (role === null || role === undefined || String(role).trim() === "") {
-    return "User";
-  }
-
-  const value = String(role).trim();
-
-  /*
-  |--------------------------------------------------------------------------
-  | ZKTeco Role Codes
-  |--------------------------------------------------------------------------
-  |
-  | 0  = Normal User
-  | 14 = Administrator / Super Admin
-  |
-  */
-
-  if (value === "0") {
-    return "User";
+    return 'blue-grey'
   }
 
-  if (value === "14") {
-    return "Administrator";
+/* ==========================================================================
+   ROLE ICON
+============================================================================ */
+
+const getRoleIcon =
+  (
+    role?:
+      string |
+      number |
+      null
+  ) => {
+    const value =
+      String(
+        role ??
+        ''
+      )
+        .trim()
+        .toLowerCase()
+
+    if (
+      value === '14' ||
+      value.includes(
+        'admin'
+      )
+    ) {
+      return (
+        'mdi-shield-account-outline'
+      )
+    }
+
+    if (
+      value.includes(
+        'teacher'
+      ) ||
+      value.includes(
+        'faculty'
+      )
+    ) {
+      return (
+        'mdi-account-school-outline'
+      )
+    }
+
+    return (
+      'mdi-account-outline'
+    )
   }
 
-  /*
-   * If the API later returns text roles
-   * such as employee, faculty, admin, etc.
-   */
-  if (!/^\d+$/.test(value)) {
+/* ==========================================================================
+   ROLE OPTIONS
+============================================================================ */
+
+const roleFilterOptions =
+  computed(
+    () => {
+      const roleMap =
+        new Map<
+          string,
+          string
+        >()
+
+      userAccountList.value
+        .forEach(
+          user => {
+            const rawRole =
+              String(
+                user.role ??
+                '0'
+              ).trim()
+
+            roleMap.set(
+              rawRole,
+              formatRole(
+                user.role
+              )
+            )
+          }
+        )
+
+      const options =
+        Array.from(
+          roleMap.entries()
+        )
+          .map(
+            (
+              [
+                value,
+                title
+              ]
+            ) => ({
+              title,
+              value
+            })
+          )
+          .sort(
+            (
+              a,
+              b
+            ) =>
+              a.title.localeCompare(
+                b.title
+              )
+          )
+
+      return [
+        {
+          title:
+            'All Roles',
+
+          value:
+            'all'
+        },
+
+        ...options
+      ]
+    }
+  )
+
+const rolePreview =
+  computed(
+    () => {
+      return roleFilterOptions.value
+        .filter(
+          role =>
+            role.value !==
+            'all'
+        )
+        .slice(
+          0,
+          3
+        )
+    }
+  )
+
+/* ==========================================================================
+   SEARCH + FILTER
+============================================================================ */
+
+const filteredUsers =
+  computed(
+    () => {
+      let users = [
+        ...userAccountList.value
+      ]
+
+      /*
+      |--------------------------------------------------------------------------
+      | Card Filter
+      |--------------------------------------------------------------------------
+      */
+
+      if (
+        cardFilter.value ===
+        'with-card'
+      ) {
+        users =
+          users.filter(
+            user =>
+              hasCard(
+                user.card_no
+              )
+          )
+      }
+
+      if (
+        cardFilter.value ===
+        'without-card'
+      ) {
+        users =
+          users.filter(
+            user =>
+              !hasCard(
+                user.card_no
+              )
+          )
+      }
+
+      /*
+      |--------------------------------------------------------------------------
+      | Role Filter
+      |--------------------------------------------------------------------------
+      */
+
+      if (
+        roleFilter.value !==
+        'all'
+      ) {
+        users =
+          users.filter(
+            user =>
+              String(
+                user.role ??
+                '0'
+              ).trim() ===
+              roleFilter.value
+          )
+      }
+
+      /*
+      |--------------------------------------------------------------------------
+      | Search
+      |--------------------------------------------------------------------------
+      */
+
+      const keyword =
+        search.value
+          .trim()
+          .toLowerCase()
+
+      if (
+        keyword
+      ) {
+        users =
+          users.filter(
+            user => {
+              const fields = [
+                user.name,
+                user.user_id,
+                user.uid,
+                user.card_no,
+                formatRole(
+                  user.role
+                )
+              ]
+
+              return fields.some(
+                field =>
+                  String(
+                    field ??
+                    ''
+                  )
+                    .toLowerCase()
+                    .includes(
+                      keyword
+                    )
+              )
+            }
+          )
+      }
+
+      return users
+    }
+  )
+
+/* ==========================================================================
+   ACTIVE FILTER
+============================================================================ */
+
+const hasActiveFilters =
+  computed(
+    () => {
+      return Boolean(
+        search.value ||
+        cardFilter.value !==
+          'all' ||
+        roleFilter.value !==
+          'all'
+      )
+    }
+  )
+
+/* ==========================================================================
+   SHOW ALL
+============================================================================ */
+
+const showAllUsers =
+  () => {
+    cardFilter.value =
+      'all'
+
+    roleFilter.value =
+      'all'
+
+    search.value =
+      ''
+  }
+
+/* ==========================================================================
+   RESET FILTERS
+============================================================================ */
+
+const resetFilters =
+  () => {
+    search.value =
+      ''
+
+    cardFilter.value =
+      'all'
+
+    roleFilter.value =
+      'all'
+  }
+
+/* ==========================================================================
+   FETCH USERS
+============================================================================ */
+
+const initialize =
+  async (
+    showLoader =
+      true
+  ) => {
+    if (
+      showLoader
+    ) {
+      loading.value =
+        true
+    } else {
+      refreshing.value =
+        true
+    }
+
+    try {
+      const result =
+        await $fetch<
+          UserAccount[]
+        >(
+          '/api/user-accounts/list'
+        )
+
+      userAccountList.value =
+        result ??
+        []
+
+      lastUpdated.value =
+        new Date()
+
+      errorMessage.value =
+        ''
+    } catch (
+      error
+    ) {
+      console.error(
+        'Failed to fetch users:',
+        error
+      )
+
+      errorMessage.value =
+        'Unable to load user accounts.'
+    } finally {
+      loading.value =
+        false
+
+      refreshing.value =
+        false
+    }
+  }
+
+/* ==========================================================================
+   USER INITIALS
+============================================================================ */
+
+const getInitials =
+  (
+    name?:
+      string |
+      null
+  ) => {
+    if (
+      !name
+    ) {
+      return '?'
+    }
+
+    const parts =
+      name
+        .trim()
+        .split(
+          /\s+/
+        )
+
+    if (
+      parts.length ===
+      1
+    ) {
+      return parts[0]
+        .substring(
+          0,
+          2
+        )
+        .toUpperCase()
+    }
+
+    return (
+      (
+        parts[0]?.[0] ??
+        ''
+      ) +
+      (
+        parts[
+          parts.length - 1
+        ]?.[0] ??
+        ''
+      )
+    ).toUpperCase()
+  }
+
+/* ==========================================================================
+   LAST UPDATED
+============================================================================ */
+
+const formatLastUpdated =
+  (
+    value:
+      Date
+  ) => {
     return value
-      .replace(/[_-]/g, " ")
-      .replace(/\b\w/g, (char) => char.toUpperCase());
+      .toLocaleTimeString(
+        'en-PH',
+        {
+          hour:
+            '2-digit',
+
+          minute:
+            '2-digit',
+
+          hour12:
+            true
+        }
+      )
   }
 
-  /*
-   * Unknown biometric role code.
-   */
-  return `Role ${value}`;
-};
+/* ==========================================================================
+   LIFECYCLE
+============================================================================ */
 
-const getRoleColor = (role?: string | number | null) => {
-  const value = String(role ?? "")
-    .trim()
-    .toLowerCase();
-
-  /*
-   * ZKTeco normal user
-   */
-  if (value === "0") {
-    return "success";
+onMounted(
+  async () => {
+    await initialize(
+      true
+    )
   }
-
-  /*
-   * ZKTeco administrator
-   */
-  if (value === "14") {
-    return "purple";
-  }
-
-  /*
-   * Text-based roles
-   */
-  if (value.includes("admin")) {
-    return "purple";
-  }
-
-  if (value.includes("teacher") || value.includes("faculty")) {
-    return "primary";
-  }
-
-  if (
-    value.includes("employee") ||
-    value.includes("staff") ||
-    value.includes("user")
-  ) {
-    return "success";
-  }
-
-  return "blue-grey";
-};
-
-/*
-|--------------------------------------------------------------------------
-| Lifecycle
-|--------------------------------------------------------------------------
-*/
-
-onMounted(async () => {
-  await initialize(true);
-});
+)
 </script>
 
 <style scoped>
-/* =========================================================
+/* ==========================================================================
    PAGE
-========================================================= */
+============================================================================ */
 
 .users-page {
-  min-height: 100%;
-  padding: 24px;
-  background: #f7f8fa;
+  min-height:
+    100%;
+
+  padding:
+    24px;
+
+  background:
+    #f7f9f8;
 }
 
-/* =========================================================
-   PAGE HEADER
-========================================================= */
+/* ==========================================================================
+   HEADER
+============================================================================ */
 
 .page-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display:
+    flex;
 
-  gap: 20px;
+  align-items:
+    center;
+
+  justify-content:
+    space-between;
+
+  gap:
+    20px;
+
+  margin-bottom:
+    20px;
+}
+
+.page-heading {
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  gap:
+    12px;
+}
+
+.page-heading-icon {
+  width:
+    44px;
+
+  height:
+    44px;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  flex-shrink:
+    0;
+
+  border:
+    1px solid
+    #dceee1;
+
+  border-radius:
+    12px;
+
+  background:
+    #edf9f1;
+
+  color:
+    #15803d;
 }
 
 .page-title {
-  margin: 0;
+  margin:
+    0;
 
-  color: #1f2937;
+  color:
+    #1f2937;
 
-  font-size: 1.55rem;
-  font-weight: 750;
-  line-height: 1.2;
+  font-size:
+    1.48rem;
+
+  font-weight:
+    760;
+
+  line-height:
+    1.2;
 }
 
 .page-subtitle {
-  margin: 0;
+  margin:
+    4px
+    0
+    0;
 
-  color: #6b7280;
+  color:
+    #7d8792;
 
-  font-size: 0.9rem;
+  font-size:
+    0.82rem;
 }
 
 .header-actions {
-  display: flex;
-  align-items: center;
+  display:
+    flex;
 
-  gap: 10px;
+  align-items:
+    center;
+
+  gap:
+    8px;
 }
 
-/* =========================================================
-   SUMMARY CARDS
-========================================================= */
+.updated-status {
+  min-height:
+    34px;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  gap:
+    7px;
+
+  padding:
+    7px
+    11px;
+
+  border:
+    1px solid
+    #e5e7eb;
+
+  border-radius:
+    9px;
+
+  background:
+    #ffffff;
+
+  color:
+    #6b7280;
+
+  font-size:
+    0.66rem;
+
+  font-weight:
+    600;
+}
+
+.refresh-header-button {
+  text-transform:
+    none;
+
+  font-size:
+    0.7rem;
+
+  font-weight:
+    650;
+
+  letter-spacing:
+    0;
+}
+
+/* ==========================================================================
+   DIRECTORY OVERVIEW
+============================================================================ */
+
+.directory-overview {
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  gap:
+    11px;
+
+  margin-bottom:
+    20px;
+
+  padding:
+    13px
+    16px;
+
+  border:
+    1px solid
+    #dfe9e2;
+
+  border-radius:
+    12px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #f4faf6,
+      #ffffff
+    );
+}
+
+.overview-icon {
+  width:
+    38px;
+
+  height:
+    38px;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  flex-shrink:
+    0;
+
+  border-radius:
+    10px;
+
+  background:
+    #def3e5;
+
+  color:
+    #15803d;
+}
+
+.overview-content {
+  min-width:
+    0;
+}
+
+.overview-label {
+  color:
+    #374151;
+
+  font-size:
+    0.73rem;
+
+  font-weight:
+    700;
+}
+
+.overview-description {
+  margin-top:
+    2px;
+
+  color:
+    #9ca3af;
+
+  font-size:
+    0.61rem;
+}
+
+.overview-spacer {
+  flex:
+    1;
+}
+
+.overview-stat {
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+  align-items:
+    flex-end;
+}
+
+.overview-stat-value {
+  color:
+    #1f2937;
+
+  font-size:
+    0.82rem;
+
+  font-weight:
+    760;
+}
+
+.overview-stat-label {
+  margin-top:
+    1px;
+
+  color:
+    #9ca3af;
+
+  font-size:
+    0.57rem;
+}
+
+.overview-divider {
+  width:
+    1px;
+
+  height:
+    28px;
+
+  background:
+    #e2e7e4;
+}
+
+/* ==========================================================================
+   SUMMARY
+============================================================================ */
+
+.summary-row {
+  margin-bottom:
+    16px;
+}
 
 .summary-card {
-  height: 100%;
+  height:
+    100%;
 
-  border: 1px solid #e7e9ed;
-  border-radius: 14px;
+  overflow:
+    hidden;
 
-  background: #ffffff;
+  border:
+    1px solid
+    #e5e9e6;
+
+  border-radius:
+    15px;
+
+  background:
+    #ffffff;
+
+  cursor:
+    pointer;
+
+  box-shadow:
+    0 3px 13px
+    rgba(
+      15,
+      23,
+      42,
+      0.025
+    );
 
   transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease;
+    transform
+      0.16s ease,
+    border-color
+      0.16s ease,
+    box-shadow
+      0.16s ease;
 }
 
 .summary-card:hover {
-  transform: translateY(-2px);
+  transform:
+    translateY(-3px);
 
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+  border-color:
+    #d7e8dc;
+
+  box-shadow:
+    0 10px 25px
+    rgba(
+      15,
+      23,
+      42,
+      0.055
+    );
 }
 
-.summary-label {
-  color: #6b7280;
+.summary-card-selected {
+  border-color:
+    rgba(
+      22,
+      163,
+      74,
+      0.3
+    );
 
-  font-size: 0.76rem;
-  font-weight: 700;
-
-  letter-spacing: 0.04em;
-
-  text-transform: uppercase;
+  box-shadow:
+    0 0 0
+    2px
+    rgba(
+      22,
+      163,
+      74,
+      0.05
+    );
 }
 
-.summary-value {
-  margin-top: 5px;
-
-  color: #1f2937;
-
-  font-size: 2rem;
-  font-weight: 750;
-  line-height: 1.1;
+.summary-content {
+  padding:
+    19px !important;
 }
 
-.summary-description {
-  margin-top: 5px;
+.summary-top {
+  display:
+    flex;
 
-  color: #9ca3af;
+  align-items:
+    center;
 
-  font-size: 0.75rem;
+  justify-content:
+    space-between;
+
+  margin-bottom:
+    14px;
 }
 
 .summary-icon {
-  width: 44px;
-  height: 44px;
+  width:
+    42px;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  height:
+    42px;
 
-  border-radius: 12px;
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  border-radius:
+    11px;
 }
 
-.icon-primary {
-  color: #15803d;
-  background: #ecfdf5;
+.icon-total {
+  border:
+    1px solid
+    #d9ecdf;
+
+  background:
+    #edf9f1;
+
+  color:
+    #15803d;
 }
 
-.icon-info {
-  color: #2563eb;
-  background: #eff6ff;
+.icon-card {
+  border:
+    1px solid
+    #dbeafe;
+
+  background:
+    #eff6ff;
+
+  color:
+    #2563eb;
 }
 
-.icon-warning {
-  color: #d97706;
-  background: #fffbeb;
+.icon-no-card {
+  border:
+    1px solid
+    #fde8c8;
+
+  background:
+    #fff8eb;
+
+  color:
+    #d97706;
 }
 
-.icon-success {
-  color: #16a34a;
-  background: #ecfdf5;
+.icon-role {
+  border:
+    1px solid
+    #d7efdf;
+
+  background:
+    #effbf3;
+
+  color:
+    #16a34a;
 }
 
-/* =========================================================
-   USER CARD
-========================================================= */
+.summary-tag {
+  color:
+    #9ca3af;
+
+  font-size:
+    0.54rem;
+
+  font-weight:
+    750;
+
+  letter-spacing:
+    0.07em;
+}
+
+.summary-tag-blue {
+  color:
+    #2563eb;
+}
+
+.summary-tag-warning {
+  color:
+    #d97706;
+}
+
+.summary-tag-green {
+  color:
+    #16a34a;
+}
+
+.summary-value {
+  color:
+    #1f2937;
+
+  font-size:
+    1.9rem;
+
+  font-weight:
+    780;
+
+  line-height:
+    1;
+}
+
+.summary-value-blue {
+  color:
+    #2563eb;
+}
+
+.summary-label {
+  margin-top:
+    9px;
+
+  color:
+    #374151;
+
+  font-size:
+    0.75rem;
+
+  font-weight:
+    680;
+}
+
+.summary-description {
+  margin-top:
+    3px;
+
+  color:
+    #9ca3af;
+
+  font-size:
+    0.66rem;
+}
+
+.summary-footer {
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    space-between;
+
+  margin-top:
+    16px;
+
+  padding-top:
+    11px;
+
+  border-top:
+    1px solid
+    #f0f2f1;
+
+  color:
+    #9ca3af;
+
+  font-size:
+    0.6rem;
+}
+
+.summary-progress {
+  overflow:
+    hidden;
+
+  height:
+    4px;
+
+  margin-top:
+    17px;
+
+  border-radius:
+    10px;
+
+  background:
+    #f1f3f2;
+}
+
+.summary-progress-bar {
+  height:
+    100%;
+
+  border-radius:
+    inherit;
+
+  transition:
+    width
+    0.3s ease;
+}
+
+.progress-blue {
+  background:
+    linear-gradient(
+      90deg,
+      #2563eb,
+      #60a5fa
+    );
+}
+
+.role-preview {
+  display:
+    flex;
+
+  flex-wrap:
+    wrap;
+
+  gap:
+    5px;
+
+  margin-top:
+    15px;
+}
+
+/* ==========================================================================
+   USERS CARD
+============================================================================ */
 
 .users-card {
-  overflow: hidden;
+  overflow:
+    hidden;
 
-  border: 1px solid #e7e9ed;
-  border-radius: 14px;
+  border:
+    1px solid
+    #e5e9e6;
 
-  background: #ffffff;
+  border-radius:
+    15px;
+
+  background:
+    #ffffff;
+
+  box-shadow:
+    0 4px 18px
+    rgba(
+      15,
+      23,
+      42,
+      0.025
+    );
 }
 
-/* =========================================================
+/* ==========================================================================
    TOOLBAR
-========================================================= */
+============================================================================ */
 
 .table-toolbar {
-  min-height: 76px;
+  min-height:
+    74px;
 
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display:
+    flex;
 
-  gap: 20px;
+  align-items:
+    center;
 
-  padding: 16px 20px;
+  justify-content:
+    space-between;
+
+  gap:
+    20px;
+
+  padding:
+    15px
+    19px;
+}
+
+.directory-heading {
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  gap:
+    10px;
+}
+
+.directory-heading-icon {
+  width:
+    39px;
+
+  height:
+    39px;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  flex-shrink:
+    0;
+
+  border:
+    1px solid
+    #dceee1;
+
+  border-radius:
+    10px;
+
+  background:
+    #eff9f2;
+
+  color:
+    #15803d;
 }
 
 .section-title {
-  color: #1f2937;
+  color:
+    #1f2937;
 
-  font-size: 1rem;
-  font-weight: 700;
+  font-size:
+    0.94rem;
+
+  font-weight:
+    720;
 }
 
 .section-subtitle {
-  margin-top: 2px;
+  margin-top:
+    2px;
 
-  color: #9ca3af;
+  color:
+    #9ca3af;
 
-  font-size: 0.8rem;
+  font-size:
+    0.68rem;
 }
 
 .toolbar-actions {
-  display: flex;
-  align-items: center;
+  display:
+    flex;
 
-  gap: 10px;
+  align-items:
+    center;
+
+  gap:
+    8px;
+}
+
+.card-filter {
+  width:
+    175px;
+}
+
+.role-filter {
+  width:
+    175px;
 }
 
 .search-field {
-  width: 300px;
+  width:
+    260px;
 }
 
-/* =========================================================
+:deep(
+  .card-filter
+  .v-field
+),
+:deep(
+  .role-filter
+  .v-field
+),
+:deep(
+  .search-field
+  .v-field
+) {
+  border-radius:
+    9px;
+}
+
+/* ==========================================================================
+   RESULTS BAR
+============================================================================ */
+
+.results-bar {
+  min-height:
+    40px;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    space-between;
+
+  gap:
+    12px;
+
+  padding:
+    8px
+    19px;
+
+  border-top:
+    1px solid
+    #f0f2f1;
+
+  background:
+    #fafbfa;
+
+  color:
+    #929aa4;
+
+  font-size:
+    0.61rem;
+}
+
+.results-left {
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  gap:
+    7px;
+}
+
+.results-icon {
+  width:
+    24px;
+
+  height:
+    24px;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  border-radius:
+    6px;
+
+  background:
+    #edf5ef;
+
+  color:
+    #15803d;
+}
+
+.results-right strong {
+  color:
+    #4b5563;
+}
+
+/* ==========================================================================
    TABLE
-========================================================= */
+============================================================================ */
 
-:deep(.users-table thead th) {
-  height: 50px !important;
+:deep(
+  .users-table
+  thead
+  th
+) {
+  height:
+    48px !important;
 
-  padding-left: 14px !important;
-  padding-right: 14px !important;
+  padding-left:
+    14px !important;
 
-  background: #fafafa !important;
+  padding-right:
+    14px !important;
 
-  border-bottom: 1px solid #e5e7eb !important;
+  border-bottom:
+    1px solid
+    #e8ebe9 !important;
 
-  color: #4b5563 !important;
+  background:
+    #fafbfa !important;
 
-  font-size: 0.72rem !important;
-  font-weight: 700 !important;
+  color:
+    #667085 !important;
 
-  letter-spacing: 0.025em;
+  font-size:
+    0.65rem !important;
 
-  text-transform: uppercase;
+  font-weight:
+    720 !important;
+
+  letter-spacing:
+    0.04em;
+
+  text-transform:
+    uppercase;
 }
 
-:deep(.users-table tbody td) {
-  height: 64px !important;
+:deep(
+  .users-table
+  tbody
+  td
+) {
+  height:
+    66px !important;
 
-  padding-left: 14px !important;
-  padding-right: 14px !important;
+  padding-left:
+    14px !important;
 
-  border-bottom: 1px solid #f0f1f3 !important;
+  padding-right:
+    14px !important;
 
-  color: #374151;
+  border-bottom:
+    1px solid
+    #f0f2f1 !important;
 
-  font-size: 0.84rem;
+  color:
+    #374151;
+
+  font-size:
+    0.76rem;
 }
 
-:deep(.users-table tbody tr) {
-  transition: background-color 0.15s ease;
+:deep(
+  .users-table
+  tbody
+  tr
+) {
+  transition:
+    background-color
+    0.15s ease;
 }
 
-:deep(.users-table tbody tr:hover) {
-  background: #f8faf9 !important;
+:deep(
+  .users-table
+  tbody
+  tr:hover
+) {
+  background:
+    #f8fbf9 !important;
 }
 
-/* =========================================================
-   USER
-========================================================= */
+/* ==========================================================================
+   USER CELL
+============================================================================ */
 
 .user-cell {
-  display: flex;
-  align-items: center;
+  display:
+    flex;
 
-  gap: 11px;
+  align-items:
+    center;
+
+  gap:
+    10px;
+}
+
+.user-avatar {
+  width:
+    38px;
+
+  height:
+    38px;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  flex-shrink:
+    0;
+
+  border:
+    1px solid
+    #d7eddd;
+
+  border-radius:
+    11px;
+
+  background:
+    #ebf8ef;
+
+  color:
+    #15803d;
+
+  font-size:
+    0.67rem;
+
+  font-weight:
+    760;
 }
 
 .user-info {
-  min-width: 0;
+  min-width:
+    0;
 }
 
 .user-name {
-  color: #1f2937;
+  max-width:
+    240px;
 
-  font-weight: 650;
+  overflow:
+    hidden;
+
+  color:
+    #1f2937;
+
+  font-size:
+    0.77rem;
+
+  font-weight:
+    680;
+
+  text-overflow:
+    ellipsis;
+
+  white-space:
+    nowrap;
 }
 
-.user-id {
-  margin-top: 2px;
+.user-metadata {
+  display:
+    flex;
 
-  color: #9ca3af;
+  align-items:
+    center;
 
-  font-size: 0.69rem;
+  gap:
+    5px;
+
+  margin-top:
+    3px;
+
+  color:
+    #9ca3af;
+
+  font-size:
+    0.59rem;
 }
 
-.avatar-text {
-  color: #15803d;
-
-  font-size: 0.7rem;
-  font-weight: 750;
+.metadata-dot {
+  color:
+    #d1d5db;
 }
 
-/* =========================================================
+/* ==========================================================================
    CARD NUMBER
-========================================================= */
+============================================================================ */
 
-.no-card {
-  display: flex;
-  align-items: center;
+.card-assigned {
+  display:
+    flex;
 
-  color: #9ca3af;
+  align-items:
+    center;
 
-  font-size: 0.76rem;
+  gap:
+    8px;
 }
 
-/* =========================================================
+.card-icon {
+  width:
+    30px;
+
+  height:
+    30px;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  flex-shrink:
+    0;
+
+  border-radius:
+    8px;
+}
+
+.card-icon-assigned {
+  background:
+    #eef5ff;
+
+  color:
+    #2563eb;
+}
+
+.card-icon-empty {
+  background:
+    #f6f6f6;
+
+  color:
+    #9ca3af;
+}
+
+.card-number {
+  color:
+    #374151;
+
+  font-size:
+    0.7rem;
+
+  font-weight:
+    660;
+}
+
+.no-card-title {
+  color:
+    #7c8590;
+
+  font-size:
+    0.68rem;
+
+  font-weight:
+    630;
+}
+
+.card-status {
+  margin-top:
+    2px;
+
+  color:
+    #a0a7b0;
+
+  font-size:
+    0.56rem;
+}
+
+/* ==========================================================================
+   ROLE
+============================================================================ */
+
+.role-chip {
+  font-size:
+    0.62rem;
+}
+
+/* ==========================================================================
    ACTION
-========================================================= */
+============================================================================ */
+
+.action-cell {
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  gap:
+    3px;
+}
 
 .view-button {
-  text-transform: none;
+  text-transform:
+    none;
+
+  font-size:
+    0.65rem;
+
+  font-weight:
+    650;
+
+  letter-spacing:
+    0;
 }
 
-/* =========================================================
-   EMPTY STATE
-========================================================= */
+.view-icon-button {
+  border-radius:
+    8px;
+}
+
+/* ==========================================================================
+   EMPTY
+============================================================================ */
 
 .empty-state {
-  padding: 64px 20px;
+  padding:
+    64px
+    20px;
 
-  text-align: center;
+  text-align:
+    center;
 }
 
 .empty-icon {
-  width: 68px;
-  height: 68px;
+  width:
+    66px;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  height:
+    66px;
 
-  margin: 0 auto 14px;
+  display:
+    flex;
 
-  border-radius: 50%;
+  align-items:
+    center;
 
-  background: #f3f4f6;
+  justify-content:
+    center;
 
-  color: #9ca3af;
+  margin:
+    0
+    auto
+    14px;
+
+  border-radius:
+    50%;
+
+  background:
+    #f2f6f3;
+
+  color:
+    #9fa8a2;
 }
 
 .empty-title {
-  color: #374151;
+  color:
+    #374151;
 
-  font-size: 1rem;
-  font-weight: 700;
+  font-size:
+    0.91rem;
+
+  font-weight:
+    700;
 }
 
 .empty-description {
-  margin-top: 5px;
+  max-width:
+    360px;
 
-  color: #9ca3af;
+  margin:
+    5px
+    auto
+    0;
 
-  font-size: 0.8rem;
+  color:
+    #9ca3af;
+
+  font-size:
+    0.69rem;
+
+  line-height:
+    1.5;
 }
 
-/* =========================================================
-   RESPONSIVE
-========================================================= */
+/* ==========================================================================
+   TABLET
+============================================================================ */
 
-@media (max-width: 960px) {
-  .users-page {
-    padding: 16px;
-  }
-
-  .page-header {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .table-toolbar {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
+@media (
+  max-width: 1100px
+) {
   .toolbar-actions {
-    width: 100%;
+    flex-wrap:
+      wrap;
+
+    justify-content:
+      flex-end;
   }
 
   .search-field {
-    width: 100%;
+    width:
+      230px;
   }
 }
 
-@media (max-width: 600px) {
+@media (
+  max-width: 960px
+) {
   .users-page {
-    padding: 10px;
+    padding:
+      16px;
   }
 
-  .page-title {
-    font-size: 1.3rem;
+  .page-header {
+    align-items:
+      flex-start;
+
+    flex-direction:
+      column;
   }
 
   .header-actions {
-    width: 100%;
+    width:
+      100%;
   }
 
-  .header-actions .v-btn {
-    width: 100%;
+  .directory-overview {
+    flex-wrap:
+      wrap;
+  }
+
+  .overview-spacer {
+    display:
+      none;
+  }
+
+  .overview-stat:first-of-type {
+    margin-left:
+      auto;
+  }
+
+  .table-toolbar {
+    align-items:
+      stretch;
+
+    flex-direction:
+      column;
+  }
+
+  .toolbar-actions {
+    width:
+      100%;
+
+    flex-wrap:
+      nowrap;
+  }
+
+  .card-filter,
+  .role-filter {
+    width:
+      180px;
+  }
+
+  .search-field {
+    flex:
+      1;
+
+    width:
+      auto;
+  }
+
+  :deep(
+    .users-table
+    .v-table__wrapper
+  ) {
+    overflow-x:
+      auto;
+  }
+}
+
+/* ==========================================================================
+   MOBILE
+============================================================================ */
+
+@media (
+  max-width: 600px
+) {
+  .users-page {
+    padding:
+      10px;
+  }
+
+  .page-heading {
+    align-items:
+      flex-start;
+  }
+
+  .page-heading-icon {
+    width:
+      40px;
+
+    height:
+      40px;
+  }
+
+  .page-title {
+    font-size:
+      1.2rem;
+  }
+
+  .page-subtitle {
+    font-size:
+      0.7rem;
+  }
+
+  .header-actions {
+    align-items:
+      stretch;
+
+    flex-direction:
+      column;
+  }
+
+  .updated-status {
+    justify-content:
+      center;
+  }
+
+  .refresh-header-button {
+    width:
+      100%;
+  }
+
+  .directory-overview {
+    align-items:
+      flex-start;
+  }
+
+  .overview-content {
+    width:
+      calc(
+        100% - 50px
+      );
+  }
+
+  .overview-stat {
+    align-items:
+      flex-start;
+
+    margin-left:
+      49px !important;
+  }
+
+  .summary-footer {
+    display:
+      none;
+  }
+
+  .toolbar-actions {
+    align-items:
+      stretch;
+
+    flex-direction:
+      column;
+  }
+
+  .card-filter,
+  .role-filter,
+  .search-field {
+    width:
+      100%;
+  }
+
+  .results-bar {
+    align-items:
+      flex-start;
+
+    flex-direction:
+      column;
   }
 
   .user-name {
-    max-width: 180px;
+    max-width:
+      175px;
+  }
 
-    overflow: hidden;
+  .view-button {
+    display:
+      none;
+  }
+}
 
-    text-overflow: ellipsis;
-    white-space: nowrap;
+/* ==========================================================================
+   REDUCED MOTION
+============================================================================ */
+
+@media (
+  prefers-reduced-motion:
+  reduce
+) {
+  .summary-card,
+  .summary-progress-bar {
+    transition:
+      none;
   }
 }
 </style>

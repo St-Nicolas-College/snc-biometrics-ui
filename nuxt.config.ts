@@ -1,4 +1,6 @@
 import vuetify, { transformAssetUrls } from "vite-plugin-vuetify";
+import { version } from "./package.json";
+
 export default defineNuxtConfig({
   app: {
     head: {
@@ -31,6 +33,14 @@ export default defineNuxtConfig({
       template: {
         transformAssetUrls,
       },
+    },
+  },
+
+  runtimeConfig: {
+    strapiUrl: process.env.NUXT_STRAPI_URL || "http://localhost:1337",
+
+    public: {
+      appVersion: version
     },
   },
 });

@@ -3,8 +3,8 @@
     <!-- =========================================================
          REPORT SUMMARY
     ========================================================== -->
-    <v-row class="mb-5">
-      <!-- Records -->
+    <v-row class="summary-row">
+      <!-- All Records -->
       <v-col
         cols="12"
         sm="6"
@@ -13,28 +13,45 @@
         <v-card
           elevation="0"
           class="summary-card"
+          :class="{
+            'summary-card-active':
+              statusFilter === 'all'
+          }"
+          @click="statusFilter = 'all'"
         >
-          <v-card-text>
-            <div class="d-flex justify-space-between align-start">
-              <div>
-                <div class="summary-label">
-                  Records
-                </div>
-
-                <div class="summary-value">
-                  {{ logs.length }}
-                </div>
-
-                <div class="summary-description">
-                  Generated attendance records
-                </div>
-              </div>
-
-              <div class="summary-icon icon-primary">
-                <v-icon>
+          <v-card-text class="summary-content">
+            <div class="summary-top">
+              <div class="summary-icon icon-records">
+                <v-icon size="20">
                   mdi-file-document-outline
                 </v-icon>
               </div>
+
+              <span class="summary-tag">
+                TOTAL
+              </span>
+            </div>
+
+            <div class="summary-value">
+              {{ logs.length }}
+            </div>
+
+            <div class="summary-label">
+              Records
+            </div>
+
+            <div class="summary-description">
+              Generated attendance records
+            </div>
+
+            <div class="summary-action">
+              <span>
+                View all records
+              </span>
+
+              <v-icon size="14">
+                mdi-arrow-right
+              </v-icon>
             </div>
           </v-card-text>
         </v-card>
@@ -49,28 +66,45 @@
         <v-card
           elevation="0"
           class="summary-card"
+          :class="{
+            'summary-card-active':
+              statusFilter === 'on-time'
+          }"
+          @click="statusFilter = 'on-time'"
         >
-          <v-card-text>
-            <div class="d-flex justify-space-between align-start">
-              <div>
-                <div class="summary-label">
-                  On Time
-                </div>
-
-                <div class="summary-value text-success">
-                  {{ onTimeCount }}
-                </div>
-
-                <div class="summary-description">
-                  Arrived within schedule
-                </div>
-              </div>
-
-              <div class="summary-icon icon-success">
-                <v-icon>
+          <v-card-text class="summary-content">
+            <div class="summary-top">
+              <div class="summary-icon icon-on-time">
+                <v-icon size="20">
                   mdi-check-circle-outline
                 </v-icon>
               </div>
+
+              <span class="summary-tag text-success">
+                ON SCHEDULE
+              </span>
+            </div>
+
+            <div class="summary-value text-success">
+              {{ onTimeCount }}
+            </div>
+
+            <div class="summary-label">
+              On Time
+            </div>
+
+            <div class="summary-description">
+              Arrived within schedule
+            </div>
+
+            <div class="summary-action">
+              <span>
+                View on-time records
+              </span>
+
+              <v-icon size="14">
+                mdi-arrow-right
+              </v-icon>
             </div>
           </v-card-text>
         </v-card>
@@ -85,28 +119,45 @@
         <v-card
           elevation="0"
           class="summary-card"
+          :class="{
+            'summary-card-active':
+              statusFilter === 'late'
+          }"
+          @click="statusFilter = 'late'"
         >
-          <v-card-text>
-            <div class="d-flex justify-space-between align-start">
-              <div>
-                <div class="summary-label">
-                  Late
-                </div>
-
-                <div class="summary-value text-error">
-                  {{ lateCount }}
-                </div>
-
-                <div class="summary-description">
-                  Late attendance records
-                </div>
-              </div>
-
-              <div class="summary-icon icon-error">
-                <v-icon>
+          <v-card-text class="summary-content">
+            <div class="summary-top">
+              <div class="summary-icon icon-late">
+                <v-icon size="20">
                   mdi-clock-alert-outline
                 </v-icon>
               </div>
+
+              <span class="summary-tag text-error">
+                LATE
+              </span>
+            </div>
+
+            <div class="summary-value text-error">
+              {{ lateCount }}
+            </div>
+
+            <div class="summary-label">
+              Late Records
+            </div>
+
+            <div class="summary-description">
+              Attendance with lateness
+            </div>
+
+            <div class="summary-action">
+              <span>
+                Review late records
+              </span>
+
+              <v-icon size="14">
+                mdi-arrow-right
+              </v-icon>
             </div>
           </v-card-text>
         </v-card>
@@ -121,28 +172,45 @@
         <v-card
           elevation="0"
           class="summary-card"
+          :class="{
+            'summary-card-active':
+              statusFilter === 'incomplete'
+          }"
+          @click="statusFilter = 'incomplete'"
         >
-          <v-card-text>
-            <div class="d-flex justify-space-between align-start">
-              <div>
-                <div class="summary-label">
-                  No Time Out
-                </div>
-
-                <div class="summary-value text-warning">
-                  {{ noTimeOutCount }}
-                </div>
-
-                <div class="summary-description">
-                  Incomplete attendance
-                </div>
-              </div>
-
-              <div class="summary-icon icon-warning">
-                <v-icon>
+          <v-card-text class="summary-content">
+            <div class="summary-top">
+              <div class="summary-icon icon-incomplete">
+                <v-icon size="20">
                   mdi-account-clock-outline
                 </v-icon>
               </div>
+
+              <span class="summary-tag text-warning">
+                REVIEW
+              </span>
+            </div>
+
+            <div class="summary-value text-warning">
+              {{ noTimeOutCount }}
+            </div>
+
+            <div class="summary-label">
+              No Time Out
+            </div>
+
+            <div class="summary-description">
+              Incomplete attendance
+            </div>
+
+            <div class="summary-action">
+              <span>
+                Review incomplete records
+              </span>
+
+              <v-icon size="14">
+                mdi-arrow-right
+              </v-icon>
             </div>
           </v-card-text>
         </v-card>
@@ -150,20 +218,29 @@
     </v-row>
 
     <!-- =========================================================
-         FILTER
+         DATE RANGE
     ========================================================== -->
     <v-card
       elevation="0"
-      class="filter-card mb-5"
+      class="filter-card"
     >
+      <!-- Header -->
       <div class="card-header">
-        <div>
-          <div class="section-title">
-            Report Date Range
+        <div class="card-heading">
+          <div class="card-heading-icon">
+            <v-icon size="19">
+              mdi-calendar-range-outline
+            </v-icon>
           </div>
 
-          <div class="section-subtitle">
-            Select the start and end dates for the attendance report.
+          <div>
+            <div class="section-title">
+              Report Date Range
+            </div>
+
+            <div class="section-subtitle">
+              Select the attendance period you want to include.
+            </div>
           </div>
         </div>
 
@@ -172,6 +249,7 @@
           size="small"
           color="success"
           variant="tonal"
+          class="generated-chip"
         >
           <v-icon
             start
@@ -186,7 +264,53 @@
 
       <v-divider />
 
-      <v-card-text class="pa-5">
+      <!-- =======================================================
+           QUICK RANGE
+      ======================================================== -->
+      <div class="quick-range-bar">
+        <div class="quick-range-label">
+          Quick Range
+        </div>
+
+        <v-btn-toggle
+          v-model="activeQuickRange"
+          color="primary"
+          variant="outlined"
+          density="compact"
+          class="quick-range-toggle"
+        >
+          <v-btn
+            value="today"
+            size="small"
+            @click="applyQuickRange('today')"
+          >
+            Today
+          </v-btn>
+
+          <v-btn
+            value="week"
+            size="small"
+            @click="applyQuickRange('week')"
+          >
+            This Week
+          </v-btn>
+
+          <v-btn
+            value="month"
+            size="small"
+            @click="applyQuickRange('month')"
+          >
+            This Month
+          </v-btn>
+        </v-btn-toggle>
+      </div>
+
+      <v-divider />
+
+      <!-- =======================================================
+           DATE FIELDS
+      ======================================================== -->
+      <v-card-text class="filter-content">
         <v-row align="end">
           <!-- Start Date -->
           <v-col
@@ -194,8 +318,14 @@
             sm="6"
             md="4"
           >
-            <div class="field-label">
-              Start Date
+            <div class="field-label-row">
+              <div class="field-label">
+                Start Date
+              </div>
+
+              <span>
+                Required
+              </span>
             </div>
 
             <v-date-input
@@ -206,6 +336,8 @@
               prepend-inner-icon="mdi-calendar-start-outline"
               variant="outlined"
               hide-details
+              class="date-field"
+              @update:model-value="activeQuickRange = null"
             />
           </v-col>
 
@@ -215,8 +347,14 @@
             sm="6"
             md="4"
           >
-            <div class="field-label">
-              End Date
+            <div class="field-label-row">
+              <div class="field-label">
+                End Date
+              </div>
+
+              <span>
+                Required
+              </span>
             </div>
 
             <v-date-input
@@ -227,6 +365,8 @@
               prepend-inner-icon="mdi-calendar-end-outline"
               variant="outlined"
               hide-details
+              class="date-field"
+              @update:model-value="activeQuickRange = null"
             />
           </v-col>
 
@@ -241,6 +381,7 @@
                 variant="flat"
                 prepend-icon="mdi-file-chart-outline"
                 :loading="loading"
+                class="generate-button"
                 @click="searchAttendanceRange"
               >
                 Generate Report
@@ -255,6 +396,7 @@
                   !dateEnd &&
                   logs.length === 0
                 "
+                class="clear-button"
                 @click="clearReport"
               >
                 Clear
@@ -263,30 +405,51 @@
           </v-col>
         </v-row>
 
-        <!-- Selected Range -->
+        <!-- =====================================================
+             GENERATED REPORT INFORMATION
+        ====================================================== -->
         <div
           v-if="hasGeneratedReport"
-          class="selected-range mt-4"
+          class="generated-report-info"
         >
-          <v-icon
-            size="17"
-            color="primary"
-            class="me-2"
+          <div class="generated-period">
+            <div class="generated-period-icon">
+              <v-icon size="18">
+                mdi-calendar-check-outline
+              </v-icon>
+            </div>
+
+            <div>
+              <div class="generated-period-label">
+                REPORT PERIOD
+              </div>
+
+              <div class="generated-period-value">
+                {{ formatSelectedDate(dateStart) }}
+
+                <v-icon
+                  size="14"
+                  class="mx-1"
+                >
+                  mdi-arrow-right
+                </v-icon>
+
+                {{ formatSelectedDate(dateEnd) }}
+              </div>
+            </div>
+          </div>
+
+          <div
+            v-if="generatedAt"
+            class="generated-time"
           >
-            mdi-calendar-range
-          </v-icon>
+            <v-icon size="15">
+              mdi-clock-outline
+            </v-icon>
 
-          Report period:
-
-          <strong class="mx-1">
-            {{ formatSelectedDate(dateStart) }}
-          </strong>
-
-          to
-
-          <strong class="ms-1">
-            {{ formatSelectedDate(dateEnd) }}
-          </strong>
+            Generated
+            {{ formatGeneratedTime(generatedAt) }}
+          </div>
         </div>
       </v-card-text>
     </v-card>
@@ -298,49 +461,143 @@
       v-if="errorMessage"
       type="error"
       variant="tonal"
+      density="comfortable"
       closable
-      class="mb-5"
+      class="report-alert"
       @click:close="errorMessage = ''"
     >
       {{ errorMessage }}
     </v-alert>
 
     <!-- =========================================================
-         ATTENDANCE REPORT TABLE
+         REPORT TABLE
     ========================================================== -->
     <v-card
       elevation="0"
       class="report-table-card"
     >
+      <!-- =======================================================
+           TABLE HEADER
+      ======================================================== -->
       <div class="table-toolbar">
-        <div>
-          <div class="section-title">
-            Attendance Records
+        <div class="card-heading">
+          <div class="card-heading-icon">
+            <v-icon size="19">
+              mdi-table-clock
+            </v-icon>
           </div>
 
-          <div class="section-subtitle">
-            Detailed employee attendance for the selected report period.
+          <div>
+            <div class="section-title">
+              Attendance Records
+            </div>
+
+            <div class="section-subtitle">
+              Detailed attendance for the generated report period.
+            </div>
           </div>
         </div>
 
-        <v-text-field
-          v-model="search"
-          density="compact"
-          placeholder="Search employee..."
-          clearable
-          prepend-inner-icon="mdi-magnify"
-          variant="outlined"
-          hide-details
-          class="search-field"
-        />
+        <div class="toolbar-actions">
+          <!-- Print -->
+          <v-btn
+            color="primary"
+            variant="outlined"
+            prepend-icon="mdi-printer-outline"
+            :disabled="
+              !hasGeneratedReport ||
+              filteredLogs.length === 0
+            "
+            class="print-button"
+            @click="printAttendanceReport"
+          >
+            Print / PDF
+          </v-btn>
+
+          <!-- Status Filter -->
+          <v-select
+            v-model="statusFilter"
+            :items="statusFilterOptions"
+            item-title="title"
+            item-value="value"
+            density="compact"
+            variant="outlined"
+            hide-details
+            prepend-inner-icon="mdi-filter-outline"
+            class="status-filter"
+          />
+
+          <!-- Search -->
+          <v-text-field
+            v-model="search"
+            density="compact"
+            placeholder="Search employee..."
+            clearable
+            prepend-inner-icon="mdi-magnify"
+            variant="outlined"
+            hide-details
+            class="search-field"
+          />
+        </div>
+      </div>
+
+      <!-- =======================================================
+           RESULTS BAR
+      ======================================================== -->
+      <div class="results-bar">
+        <div class="results-left">
+          <div
+            class="report-result-status"
+            :class="{
+              'report-result-status-active':
+                hasGeneratedReport
+            }"
+          />
+
+          <span>
+            {{
+              hasGeneratedReport
+                ? 'Generated attendance report'
+                : 'No report generated'
+            }}
+          </span>
+
+          <template v-if="hasGeneratedReport">
+            <span class="results-divider">
+              •
+            </span>
+
+            <span>
+              {{ reportPeriodText }}
+            </span>
+          </template>
+        </div>
+
+        <div class="results-right">
+          Showing
+
+          <strong>
+            {{ filteredLogs.length }}
+          </strong>
+
+          of
+
+          <strong>
+            {{ logs.length }}
+          </strong>
+
+          records
+        </div>
       </div>
 
       <v-divider />
 
+      <!-- =======================================================
+           TABLE
+      ======================================================== -->
       <v-data-table
-        :items="logs"
+        :items="filteredLogs"
         :headers="headers"
-        :search="search"
         :loading="loading"
         :sort-by="defaultSort"
         density="comfortable"
@@ -359,22 +616,20 @@
         ====================================================== -->
         <template #[`item.name`]="{ item }">
           <div class="employee-cell">
-            <v-avatar
-              size="36"
-              color="green-lighten-5"
-            >
-              <span class="avatar-text">
-                {{ getInitials(item.name) }}
-              </span>
-            </v-avatar>
+            <div class="employee-avatar">
+              {{ getInitials(item.name) }}
+            </div>
 
             <div class="employee-info">
               <div class="employee-name">
-                {{ item.name || 'Unknown Employee' }}
+                {{
+                  item.name ||
+                  'Unknown Employee'
+                }}
               </div>
 
               <div class="employee-subtitle">
-                ID {{ item.user_id }}
+                Employee ID {{ item.user_id }}
               </div>
             </div>
           </div>
@@ -385,12 +640,24 @@
         ====================================================== -->
         <template #[`item.log_date`]="{ item }">
           <div class="date-cell">
-            <div class="date-primary">
-              {{ formatDate(item.log_date) }}
+            <div class="date-calendar">
+              <span>
+                {{ getDateDay(item.log_date) }}
+              </span>
+
+              <small>
+                {{ getDateMonth(item.log_date) }}
+              </small>
             </div>
 
-            <div class="date-secondary">
-              {{ getDayName(item.log_date) }}
+            <div>
+              <div class="date-primary">
+                {{ formatDate(item.log_date) }}
+              </div>
+
+              <div class="date-secondary">
+                {{ getDayName(item.log_date) }}
+              </div>
             </div>
           </div>
         </template>
@@ -400,31 +667,44 @@
         ====================================================== -->
         <template #[`item.schedule`]="{ item }">
           <div
-            v-if="item.shift_start || item.shift_end"
+            v-if="
+              item.shift_start ||
+              item.shift_end
+            "
             class="schedule-cell"
           >
-            <v-icon
-              size="15"
-              class="me-1"
-            >
-              mdi-clock-outline
-            </v-icon>
+            <div class="schedule-icon">
+              <v-icon size="15">
+                mdi-clock-outline
+              </v-icon>
+            </div>
 
-            {{ formatShiftTime(item.shift_start) }}
+            <div>
+              <div class="schedule-time">
+                {{ formatShiftTime(item.shift_start) }}
+                –
+                {{ formatShiftTime(item.shift_end) }}
+              </div>
 
-            <span class="schedule-separator">
-              –
-            </span>
-
-            {{ formatShiftTime(item.shift_end) }}
+              <div
+                v-if="item.shift_name"
+                class="schedule-name"
+              >
+                {{ item.shift_name }}
+              </div>
+            </div>
           </div>
 
-          <span
+          <div
             v-else
-            class="empty-value"
+            class="no-schedule"
           >
-            —
-          </span>
+            <v-icon size="14">
+              mdi-calendar-remove-outline
+            </v-icon>
+
+            No schedule
+          </div>
         </template>
 
         <!-- =====================================================
@@ -433,16 +713,17 @@
         <template #[`item.in_time`]="{ item }">
           <div
             v-if="item.in_time"
-            class="attendance-time time-in"
+            class="attendance-time"
           >
-            <v-icon
-              size="16"
-              class="me-1"
-            >
-              mdi-login
-            </v-icon>
+            <div class="time-icon time-icon-in">
+              <v-icon size="14">
+                mdi-login
+              </v-icon>
+            </div>
 
-            {{ formatTime(item.in_time) }}
+            <span class="time-in">
+              {{ formatTime(item.in_time) }}
+            </span>
           </div>
 
           <span
@@ -462,10 +743,11 @@
             size="small"
             color="warning"
             variant="tonal"
+            class="status-chip"
           >
             <v-icon
               start
-              size="14"
+              size="13"
             >
               mdi-clock-alert-outline
             </v-icon>
@@ -475,16 +757,17 @@
 
           <div
             v-else
-            class="attendance-time time-out"
+            class="attendance-time"
           >
-            <v-icon
-              size="16"
-              class="me-1"
-            >
-              mdi-logout
-            </v-icon>
+            <div class="time-icon time-icon-out">
+              <v-icon size="14">
+                mdi-logout
+              </v-icon>
+            </div>
 
-            {{ formatTime(item.out_time) }}
+            <span class="time-out">
+              {{ formatTime(item.out_time) }}
+            </span>
           </div>
         </template>
 
@@ -493,30 +776,38 @@
         ====================================================== -->
         <template #[`item.late_status`]="{ item }">
           <v-chip
-            v-if="Number(item.late_minutes ?? 0) > 0"
+            v-if="
+              Number(
+                item.late_minutes ??
+                0
+              ) > 0
+            "
             size="small"
             color="error"
             variant="tonal"
+            class="status-chip"
           >
             <v-icon
               start
-              size="14"
+              size="13"
             >
               mdi-clock-alert-outline
             </v-icon>
 
-            {{ item.late_minutes }} min Late
+            {{ item.late_minutes }}
+            min Late
           </v-chip>
 
           <v-chip
-            v-else-if="item.late_status"
+            v-else-if="isOnTime(item)"
             size="small"
             color="success"
             variant="tonal"
+            class="status-chip"
           >
             <v-icon
               start
-              size="14"
+              size="13"
             >
               mdi-check-circle-outline
             </v-icon>
@@ -545,10 +836,11 @@
                 item.early_leave_status
               ).color
             "
+            class="status-chip"
           >
             <v-icon
               start
-              size="14"
+              size="13"
             >
               {{
                 getEarlyLeaveMeta(
@@ -557,7 +849,11 @@
               }}
             </v-icon>
 
-            {{ item.early_leave_status }}
+            {{
+              getEarlyLeaveDisplay(
+                item.early_leave_status
+              )
+            }}
           </v-chip>
 
           <span
@@ -579,9 +875,11 @@
             "
             class="total-hours"
           >
-            {{ item.total_hours }}
+            <span class="total-hours-value">
+              {{ item.total_hours }}
+            </span>
 
-            <span>
+            <span class="total-hours-label">
               hrs
             </span>
           </div>
@@ -600,18 +898,45 @@
         <template #no-data>
           <div class="empty-state">
             <div class="empty-icon">
-              <v-icon size="36">
-                mdi-file-search-outline
+              <v-icon size="35">
+                {{
+                  hasGeneratedReport
+                    ? 'mdi-file-search-outline'
+                    : 'mdi-file-chart-outline'
+                }}
               </v-icon>
             </div>
 
             <div class="empty-title">
-              No report generated
+              {{
+                hasGeneratedReport
+                  ? 'No attendance records found'
+                  : 'No report generated'
+              }}
             </div>
 
             <div class="empty-description">
-              Select a start and end date, then click Generate Report.
+              {{
+                hasGeneratedReport
+                  ? 'Try changing the employee search or attendance status filter.'
+                  : 'Select a report period above, then click Generate Report.'
+              }}
             </div>
+
+            <v-btn
+              v-if="
+                hasGeneratedReport &&
+                hasActiveTableFilters
+              "
+              color="primary"
+              variant="tonal"
+              size="small"
+              prepend-icon="mdi-filter-remove-outline"
+              class="mt-4"
+              @click="resetTableFilters"
+            >
+              Reset Table Filters
+            </v-btn>
           </div>
         </template>
       </v-data-table>
@@ -620,12 +945,15 @@
 </template>
 
 <script setup lang="ts">
-//@ts-nocheck
-/*
-|--------------------------------------------------------------------------
-| Types
-|--------------------------------------------------------------------------
-*/
+// @ts-nocheck
+
+import {
+  printReport
+} from '~/utils/printReport'
+
+/* ==========================================================================
+   TYPES
+============================================================================ */
 
 interface AttendanceLog {
   user_id: number
@@ -649,17 +977,19 @@ interface AttendanceLog {
   total_hours?: number | string | null
 }
 
-/*
-|--------------------------------------------------------------------------
-| State
-|--------------------------------------------------------------------------
-*/
+/* ==========================================================================
+   STATE
+============================================================================ */
 
 const dateStart =
-  ref<Date | null>(null)
+  ref<Date | null>(
+    null
+  )
 
 const dateEnd =
-  ref<Date | null>(null)
+  ref<Date | null>(
+    null
+  )
 
 const logs =
   ref<AttendanceLog[]>([])
@@ -676,163 +1006,473 @@ const errorMessage =
 const hasGeneratedReport =
   ref(false)
 
-/*
-|--------------------------------------------------------------------------
-| Sort
-|--------------------------------------------------------------------------
-*/
+const generatedAt =
+  ref<Date | null>(
+    null
+  )
+
+const activeQuickRange =
+  ref<
+    'today' |
+    'week' |
+    'month' |
+    null
+  >(null)
+
+const statusFilter =
+  ref<
+    'all' |
+    'on-time' |
+    'late' |
+    'incomplete'
+  >('all')
+
+/* ==========================================================================
+   STATUS FILTER
+============================================================================ */
+
+const statusFilterOptions = [
+  {
+    title:
+      'All Records',
+
+    value:
+      'all'
+  },
+
+  {
+    title:
+      'On Time',
+
+    value:
+      'on-time'
+  },
+
+  {
+    title:
+      'Late',
+
+    value:
+      'late'
+  },
+
+  {
+    title:
+      'No Time Out',
+
+    value:
+      'incomplete'
+  }
+]
+
+/* ==========================================================================
+   SORT
+============================================================================ */
 
 const defaultSort =
   ref([
     {
-      key: 'log_date',
-      order: 'desc' as const
+      key:
+        'log_date',
+
+      order:
+        'desc' as const
     }
   ])
 
-/*
-|--------------------------------------------------------------------------
-| Headers
-|--------------------------------------------------------------------------
-*/
+/* ==========================================================================
+   HEADERS
+============================================================================ */
 
 const headers = [
   {
-    title: 'Employee',
-    key: 'name',
-    sortable: true
+    title:
+      'Employee',
+
+    key:
+      'name',
+
+    sortable:
+      true,
+
+    minWidth:
+      220
   },
 
   {
-    title: 'Date',
-    key: 'log_date',
-    sortable: true,
-    width: 130
+    title:
+      'Date',
+
+    key:
+      'log_date',
+
+    sortable:
+      true,
+
+    minWidth:
+      165
   },
 
   {
-    title: 'Schedule',
-    key: 'schedule',
-    sortable: false,
-    width: 160
+    title:
+      'Schedule',
+
+    key:
+      'schedule',
+
+    sortable:
+      false,
+
+    minWidth:
+      165
   },
 
   {
-    title: 'Time In',
-    key: 'in_time',
-    sortable: false,
-    width: 125
+    title:
+      'Time In',
+
+    key:
+      'in_time',
+
+    sortable:
+      false,
+
+    width:
+      135
   },
 
   {
-    title: 'Time Out',
-    key: 'out_time',
-    sortable: false,
-    width: 140
+    title:
+      'Time Out',
+
+    key:
+      'out_time',
+
+    sortable:
+      false,
+
+    width:
+      145
   },
 
   {
-    title: 'Lateness',
-    key: 'late_status',
-    sortable: true,
-    width: 135
+    title:
+      'Lateness',
+
+    key:
+      'late_status',
+
+    sortable:
+      true,
+
+    width:
+      135
   },
 
   {
-    title: 'Early Leave',
-    key: 'early_leave_status',
-    sortable: true,
-    width: 130
+    title:
+      'Early Leave',
+
+    key:
+      'early_leave_status',
+
+    sortable:
+      true,
+
+    width:
+      135
   },
 
   {
-    title: 'Total Hours',
-    key: 'total_hours',
-    sortable: true,
-    width: 110
+    title:
+      'Total Hours',
+
+    key:
+      'total_hours',
+
+    sortable:
+      true,
+
+    width:
+      110
   }
 ]
 
-/*
-|--------------------------------------------------------------------------
-| Summary
-|--------------------------------------------------------------------------
-*/
+/* ==========================================================================
+   ATTENDANCE HELPERS
+============================================================================ */
+
+const hasNoTimeOut =
+  (
+    item:
+      AttendanceLog
+  ) => {
+    return (
+      !item.out_time ||
+      item.in_time ===
+        item.out_time
+    )
+  }
+
+const isOnTime =
+  (
+    item:
+      AttendanceLog
+  ) => {
+    const status =
+      String(
+        item.late_status ??
+        ''
+      )
+        .trim()
+        .toLowerCase()
+
+    const lateMinutes =
+      Number(
+        item.late_minutes ??
+        0
+      )
+
+    return (
+      status.includes(
+        'on time'
+      ) ||
+      (
+        Boolean(
+          item.late_status
+        ) &&
+        lateMinutes === 0
+      )
+    )
+  }
+
+/* ==========================================================================
+   SUMMARY
+============================================================================ */
 
 const onTimeCount =
-  computed(() => {
-    return logs.value.filter(
-      item => {
-        const status =
-          String(
-            item.late_status ?? ''
-          ).toLowerCase()
-
-        return (
-          status.includes(
-            'on time'
-          ) ||
-          (
-            item.late_status &&
-            Number(
-              item.late_minutes ??
-              0
-            ) === 0
-          )
+  computed(
+    () => {
+      return logs.value
+        .filter(
+          item =>
+            isOnTime(
+              item
+            )
         )
-      }
-    ).length
-  })
+        .length
+    }
+  )
 
 const lateCount =
-  computed(() => {
-    return logs.value.filter(
-      item =>
-        Number(
-          item.late_minutes ??
-          0
-        ) > 0
-    ).length
-  })
+  computed(
+    () => {
+      return logs.value
+        .filter(
+          item =>
+            Number(
+              item.late_minutes ??
+                0
+            ) > 0
+        )
+        .length
+    }
+  )
 
 const noTimeOutCount =
-  computed(() => {
-    return logs.value.filter(
-      item =>
-        hasNoTimeOut(item)
-    ).length
-  })
+  computed(
+    () => {
+      return logs.value
+        .filter(
+          item =>
+            hasNoTimeOut(
+              item
+            )
+        )
+        .length
+    }
+  )
 
-/*
-|--------------------------------------------------------------------------
-| Format Date for API
-|--------------------------------------------------------------------------
-|
-| Existing backend:
-|
-| /api/attendance/search
-|
-| expects:
-|
-| DD/MM/YYYY
-|
-*/
+/* ==========================================================================
+   FILTER TABLE
+============================================================================ */
+
+const filteredLogs =
+  computed(
+    () => {
+      let result = [
+        ...logs.value
+      ]
+
+      /* ================================================================
+         STATUS
+      ================================================================= */
+
+      switch (
+        statusFilter.value
+      ) {
+        case 'on-time':
+          result =
+            result.filter(
+              item =>
+                isOnTime(
+                  item
+                )
+            )
+
+          break
+
+        case 'late':
+          result =
+            result.filter(
+              item =>
+                Number(
+                  item.late_minutes ??
+                    0
+                ) > 0
+            )
+
+          break
+
+        case 'incomplete':
+          result =
+            result.filter(
+              item =>
+                hasNoTimeOut(
+                  item
+                )
+            )
+
+          break
+      }
+
+      /* ================================================================
+         SEARCH
+      ================================================================= */
+
+      const keyword =
+        search.value
+          .trim()
+          .toLowerCase()
+
+      if (
+        keyword
+      ) {
+        result =
+          result.filter(
+            item => {
+              const searchableValues = [
+                item.name,
+                item.user_id,
+                item.log_date,
+                item.shift_name,
+                item.late_status,
+                item.early_leave_status
+              ]
+
+              return searchableValues
+                .some(
+                  value =>
+                    String(
+                      value ??
+                        ''
+                    )
+                      .toLowerCase()
+                      .includes(
+                        keyword
+                      )
+                )
+            }
+          )
+      }
+
+      return result
+    }
+  )
+
+const hasActiveTableFilters =
+  computed(
+    () => {
+      return (
+        Boolean(
+          search.value
+        ) ||
+        statusFilter.value !==
+          'all'
+      )
+    }
+  )
+
+const resetTableFilters =
+  () => {
+    search.value =
+      ''
+
+    statusFilter.value =
+      'all'
+  }
+
+/* ==========================================================================
+   REPORT PERIOD
+============================================================================ */
+
+const reportPeriodText =
+  computed(
+    () => {
+      if (
+        !dateStart.value ||
+        !dateEnd.value
+      ) {
+        return ''
+      }
+
+      return (
+        `${formatSelectedDate(
+          dateStart.value
+        )} – ${formatSelectedDate(
+          dateEnd.value
+        )}`
+      )
+    }
+  )
+
+/* ==========================================================================
+   API DATE FORMAT
+============================================================================ */
 
 const formatSearchDate =
   (
-    value: Date
+    value:
+      Date
   ) => {
-    return value
-      .toLocaleDateString(
-        'en-GB'
+    const day =
+      String(
+        value.getDate()
+      ).padStart(
+        2,
+        '0'
       )
+
+    const month =
+      String(
+        value.getMonth() +
+          1
+      ).padStart(
+        2,
+        '0'
+      )
+
+    const year =
+      value.getFullYear()
+
+    return (
+      `${day}/${month}/${year}`
+    )
   }
 
-/*
-|--------------------------------------------------------------------------
-| Generate Report
-|--------------------------------------------------------------------------
-*/
+/* ==========================================================================
+   GENERATE REPORT
+============================================================================ */
 
 const searchAttendanceRange =
   async () => {
@@ -885,11 +1525,26 @@ const searchAttendanceRange =
         )
 
       logs.value =
-        result ?? []
+        result ??
+        []
 
       hasGeneratedReport.value =
         true
-    } catch (error) {
+
+      generatedAt.value =
+        new Date()
+
+      statusFilter.value =
+        'all'
+
+      search.value =
+        ''
+
+      errorMessage.value =
+        ''
+    } catch (
+      error
+    ) {
       console.error(
         'Attendance report error:',
         error
@@ -901,6 +1556,9 @@ const searchAttendanceRange =
       hasGeneratedReport.value =
         false
 
+      generatedAt.value =
+        null
+
       errorMessage.value =
         'Unable to generate the attendance report.'
     } finally {
@@ -909,11 +1567,90 @@ const searchAttendanceRange =
     }
   }
 
-/*
-|--------------------------------------------------------------------------
-| Clear
-|--------------------------------------------------------------------------
-*/
+/* ==========================================================================
+   QUICK RANGE
+============================================================================ */
+
+const applyQuickRange =
+  async (
+    range:
+      'today' |
+      'week' |
+      'month'
+  ) => {
+    activeQuickRange.value =
+      range
+
+    const today =
+      new Date()
+
+    today.setHours(
+      0,
+      0,
+      0,
+      0
+    )
+
+    let startDate =
+      new Date(
+        today
+      )
+
+    /* ================================================================
+       THIS WEEK
+       Monday = first day
+    ================================================================= */
+
+    if (
+      range ===
+      'week'
+    ) {
+      const weekday =
+        today.getDay()
+
+      const daysFromMonday =
+        weekday === 0
+          ? 6
+          : weekday - 1
+
+      startDate.setDate(
+        today.getDate() -
+          daysFromMonday
+      )
+    }
+
+    /* ================================================================
+       THIS MONTH
+    ================================================================= */
+
+    if (
+      range ===
+      'month'
+    ) {
+      startDate =
+        new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          1
+        )
+    }
+
+    dateStart.value =
+      startDate
+
+    dateEnd.value =
+      new Date(
+        today
+      )
+
+    await nextTick()
+
+    await searchAttendanceRange()
+  }
+
+/* ==========================================================================
+   CLEAR REPORT
+============================================================================ */
 
 const clearReport =
   () => {
@@ -934,46 +1671,42 @@ const clearReport =
 
     hasGeneratedReport.value =
       false
+
+    generatedAt.value =
+      null
+
+    activeQuickRange.value =
+      null
+
+    statusFilter.value =
+      'all'
   }
 
-/*
-|--------------------------------------------------------------------------
-| No Time Out
-|--------------------------------------------------------------------------
-*/
-
-const hasNoTimeOut =
-  (
-    item: AttendanceLog
-  ) => {
-    return (
-      !item.out_time ||
-      item.in_time ===
-        item.out_time
-    )
-  }
-
-/*
-|--------------------------------------------------------------------------
-| Employee Initials
-|--------------------------------------------------------------------------
-*/
+/* ==========================================================================
+   INITIALS
+============================================================================ */
 
 const getInitials =
   (
-    name?: string
+    name?:
+      string
   ) => {
-    if (!name) {
+    if (
+      !name
+    ) {
       return '?'
     }
 
     const parts =
       name
         .trim()
-        .split(/\s+/)
+        .split(
+          /\s+/
+        )
 
     if (
-      parts.length === 1
+      parts.length ===
+      1
     ) {
       return parts[0]
         .substring(
@@ -986,46 +1719,71 @@ const getInitials =
     return (
       (
         parts[0]?.[0] ??
-        ''
+          ''
       ) +
       (
         parts[
-          parts.length - 1
+          parts.length -
+            1
         ]?.[0] ??
-        ''
+          ''
       )
     ).toUpperCase()
   }
 
-/*
-|--------------------------------------------------------------------------
-| Date Parsing
-|--------------------------------------------------------------------------
-*/
+/* ==========================================================================
+   DATE PARSING
+============================================================================ */
 
 const parseDateValue =
   (
-    value?: string
+    value?:
+      string
   ) => {
-    if (!value) {
+    if (
+      !value
+    ) {
       return null
     }
 
+    const cleanValue =
+      String(
+        value
+      ).trim()
+
+    /*
+     * YYYY-MM-DD returned by
+     * attendance APIs.
+     *
+     * Build it as local date
+     * to avoid UTC date shifting.
+     */
+
     const match =
-      value.match(
+      cleanValue.match(
         /^(\d{4})-(\d{2})-(\d{2})$/
       )
 
-    if (match) {
+    if (
+      match
+    ) {
       return new Date(
-        Number(match[1]),
-        Number(match[2]) - 1,
-        Number(match[3])
+        Number(
+          match[1]
+        ),
+        Number(
+          match[2]
+        ) - 1,
+        Number(
+          match[3]
+        )
       )
     }
 
     const date =
-      new Date(value)
+      new Date(
+        cleanValue
+      )
 
     if (
       Number.isNaN(
@@ -1038,68 +1796,138 @@ const parseDateValue =
     return date
   }
 
-/*
-|--------------------------------------------------------------------------
-| Format Date
-|--------------------------------------------------------------------------
-*/
+/* ==========================================================================
+   FORMAT DATE
+============================================================================ */
 
 const formatDate =
   (
-    value?: string
+    value?:
+      string
   ) => {
     const date =
-      parseDateValue(value)
+      parseDateValue(
+        value
+      )
 
-    if (!date) {
+    if (
+      !date
+    ) {
       return '—'
     }
 
-    return date.toLocaleDateString(
-      'en-PH',
-      {
-        month: 'short',
-        day: '2-digit',
-        year: 'numeric'
-      }
-    )
+    return date
+      .toLocaleDateString(
+        'en-PH',
+        {
+          month:
+            'short',
+
+          day:
+            '2-digit',
+
+          year:
+            'numeric'
+        }
+      )
   }
 
 const getDayName =
   (
-    value?: string
+    value?:
+      string
   ) => {
     const date =
-      parseDateValue(value)
+      parseDateValue(
+        value
+      )
 
-    if (!date) {
+    if (
+      !date
+    ) {
       return ''
     }
 
-    return date.toLocaleDateString(
-      'en-PH',
-      {
-        weekday: 'long'
-      }
+    return date
+      .toLocaleDateString(
+        'en-PH',
+        {
+          weekday:
+            'long'
+        }
+      )
+  }
+
+const getDateDay =
+  (
+    value?:
+      string
+  ) => {
+    const date =
+      parseDateValue(
+        value
+      )
+
+    if (
+      !date
+    ) {
+      return '--'
+    }
+
+    return String(
+      date.getDate()
+    ).padStart(
+      2,
+      '0'
     )
   }
 
-/*
-|--------------------------------------------------------------------------
-| Attendance Time
-|--------------------------------------------------------------------------
-*/
+const getDateMonth =
+  (
+    value?:
+      string
+  ) => {
+    const date =
+      parseDateValue(
+        value
+      )
+
+    if (
+      !date
+    ) {
+      return '---'
+    }
+
+    return date
+      .toLocaleDateString(
+        'en-PH',
+        {
+          month:
+            'short'
+        }
+      )
+      .toUpperCase()
+  }
+
+/* ==========================================================================
+   ATTENDANCE TIME
+============================================================================ */
 
 const formatTime =
   (
-    value?: string
+    value?:
+      string
   ) => {
-    if (!value) {
+    if (
+      !value
+    ) {
       return '—'
     }
 
     const date =
-      new Date(value)
+      new Date(
+        value
+      )
 
     if (
       Number.isNaN(
@@ -1109,28 +1937,37 @@ const formatTime =
       return '—'
     }
 
-    return date.toLocaleTimeString(
-      'en-PH',
-      {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: true
-      }
-    )
+    return date
+      .toLocaleTimeString(
+        'en-PH',
+        {
+          hour:
+            '2-digit',
+
+          minute:
+            '2-digit',
+
+          second:
+            '2-digit',
+
+          hour12:
+            true
+        }
+      )
   }
 
-/*
-|--------------------------------------------------------------------------
-| Shift Time
-|--------------------------------------------------------------------------
-*/
+/* ==========================================================================
+   SHIFT TIME
+============================================================================ */
 
 const formatShiftTime =
   (
-    value?: string
+    value?:
+      string
   ) => {
-    if (!value) {
+    if (
+      !value
+    ) {
       return '—'
     }
 
@@ -1139,12 +1976,16 @@ const formatShiftTime =
         /^(\d{1,2}):(\d{2})(?::(\d{2}))?$/
       )
 
-    if (!match) {
+    if (
+      !match
+    ) {
       return value
     }
 
     const hour =
-      Number(match[1])
+      Number(
+        match[1]
+      )
 
     const minute =
       match[2]
@@ -1158,522 +1999,1900 @@ const formatShiftTime =
       hour % 12 ||
       12
 
-    return `${displayHour}:${minute} ${period}`
-  }
-
-/*
-|--------------------------------------------------------------------------
-| Selected Date
-|--------------------------------------------------------------------------
-*/
-
-const formatSelectedDate =
-  (
-    value: Date | null
-  ) => {
-    if (!value) {
-      return '—'
-    }
-
-    return value.toLocaleDateString(
-      'en-PH',
-      {
-        month: 'short',
-        day: '2-digit',
-        year: 'numeric'
-      }
+    return (
+      `${displayHour}:${minute} ${period}`
     )
   }
 
-/*
-|--------------------------------------------------------------------------
-| Early Leave
-|--------------------------------------------------------------------------
-*/
+/* ==========================================================================
+   SELECTED DATE
+============================================================================ */
+
+const formatSelectedDate =
+  (
+    value:
+      Date |
+      null
+  ) => {
+    if (
+      !value
+    ) {
+      return '—'
+    }
+
+    return value
+      .toLocaleDateString(
+        'en-PH',
+        {
+          month:
+            'short',
+
+          day:
+            '2-digit',
+
+          year:
+            'numeric'
+        }
+      )
+  }
+
+/* ==========================================================================
+   GENERATED TIME
+============================================================================ */
+
+const formatGeneratedTime =
+  (
+    value:
+      Date
+  ) => {
+    return value
+      .toLocaleTimeString(
+        'en-PH',
+        {
+          hour:
+            '2-digit',
+
+          minute:
+            '2-digit',
+
+          hour12:
+            true
+        }
+      )
+  }
+
+/* ==========================================================================
+   EARLY LEAVE
+============================================================================ */
 
 const getEarlyLeaveMeta =
   (
-    status?: string
+    status?:
+      string
   ) => {
-    if (!status) {
+    if (
+      !status
+    ) {
       return {
-        color: 'grey',
+        color:
+          'grey',
+
         icon:
           'mdi-minus-circle-outline'
       }
     }
 
     const value =
-      status.toUpperCase()
+      status
+        .trim()
+        .toUpperCase()
 
     if (
-      value.includes('EARLY')
+      value.includes(
+        'EARLY'
+      )
     ) {
       return {
-        color: 'warning',
+        color:
+          'warning',
+
         icon:
           'mdi-clock-minus-outline'
       }
     }
 
     if (
-      value.includes('OK')
+      value.includes(
+        'OK'
+      )
     ) {
       return {
-        color: 'success',
+        color:
+          'success',
+
         icon:
           'mdi-check-circle-outline'
       }
     }
 
     return {
-      color: 'grey',
+      color:
+        'grey',
+
       icon:
         'mdi-information-outline'
+    }
+  }
+
+const getEarlyLeaveDisplay =
+  (
+    status?:
+      string
+  ) => {
+    if (
+      !status
+    ) {
+      return '—'
+    }
+
+    const value =
+      status
+        .trim()
+        .toUpperCase()
+
+    if (
+      value.includes(
+        'EARLY'
+      )
+    ) {
+      return 'Left Early'
+    }
+
+    if (
+      value.includes(
+        'OK'
+      )
+    ) {
+      return 'OK'
+    }
+
+    return status
+  }
+
+/* ==========================================================================
+   PRINT / PDF
+============================================================================ */
+
+const printAttendanceReport =
+  () => {
+    if (
+      !hasGeneratedReport.value ||
+      filteredLogs.value.length ===
+        0
+    ) {
+      return
+    }
+
+    const records =
+      filteredLogs.value
+
+    const printedOnTime =
+      records.filter(
+        item =>
+          isOnTime(
+            item
+          )
+      ).length
+
+    const printedLate =
+      records.filter(
+        item =>
+          Number(
+            item.late_minutes ??
+              0
+          ) > 0
+      ).length
+
+    const printedIncomplete =
+      records.filter(
+        item =>
+          hasNoTimeOut(
+            item
+          )
+      ).length
+
+    try {
+      printReport({
+        title:
+          'Attendance Logs Report',
+
+        subtitle:
+          'Detailed biometric attendance records',
+
+        period:
+          reportPeriodText.value,
+
+        orientation:
+          'portraits',
+
+        note:
+          hasActiveTableFilters.value
+            ? 'This report reflects the currently selected table filters.'
+            : undefined,
+
+        metrics: [
+          {
+            label:
+              'Records',
+
+            value:
+              records.length
+          },
+
+          {
+            label:
+              'On Time',
+
+            value:
+              printedOnTime
+          },
+
+          {
+            label:
+              'Late',
+
+            value:
+              printedLate
+          },
+
+          {
+            label:
+              'No Time Out',
+
+            value:
+              printedIncomplete
+          }
+        ],
+
+        columns: [
+          {
+            key:
+              'employee',
+
+            label:
+              'Employee'
+          },
+
+          {
+            key:
+              'date',
+
+            label:
+              'Date'
+          },
+
+          {
+            key:
+              'schedule',
+
+            label:
+              'Schedule'
+          },
+
+          {
+            key:
+              'time_in',
+
+            label:
+              'Time In'
+          },
+
+          {
+            key:
+              'time_out',
+
+            label:
+              'Time Out'
+          },
+
+          {
+            key:
+              'lateness',
+
+            label:
+              'Lateness'
+          },
+
+          // {
+          //   key:
+          //     'early_leave',
+
+          //   label:
+          //     'Early Leave'
+          // },
+
+          {
+            key:
+              'total_hours',
+
+            label:
+              'Total Hours',
+
+            align:
+              'right'
+          }
+        ],
+
+        rows:
+          records.map(
+            item => {
+              const lateMinutes =
+                Number(
+                  item.late_minutes ??
+                    0
+                )
+
+              const dayName =
+                getDayName(
+                  item.log_date
+                )
+
+              return {
+                employee:
+                  `${
+                    item.name ||
+                    'Unknown Employee'
+                  } (ID ${
+                    item.user_id
+                  })`,
+
+                date:
+                  dayName
+                    ? `${
+                        formatDate(
+                          item.log_date
+                        )
+                      } - ${dayName}`
+                    : formatDate(
+                        item.log_date
+                      ),
+
+                schedule:
+                  (
+                    item.shift_start ||
+                    item.shift_end
+                  )
+                    ? `${
+                        formatShiftTime(
+                          item.shift_start
+                        )
+                      } - ${
+                        formatShiftTime(
+                          item.shift_end
+                        )
+                      }${
+                        item.shift_name
+                          ? ` (${item.shift_name})`
+                          : ''
+                      }`
+                    : 'No schedule',
+
+                time_in:
+                  formatTime(
+                    item.in_time
+                  ),
+
+                time_out:
+                  hasNoTimeOut(
+                    item
+                  )
+                    ? 'No Time Out'
+                    : formatTime(
+                        item.out_time
+                      ),
+
+                lateness:
+                  lateMinutes >
+                  0
+                    ? `${lateMinutes} min Late`
+                    : isOnTime(
+                        item
+                      )
+                      ? 'On Time'
+                      : '—',
+
+                early_leave:
+                  getEarlyLeaveDisplay(
+                    item.early_leave_status
+                  ),
+
+                total_hours:
+                  item.total_hours !==
+                    null &&
+                  item.total_hours !==
+                    undefined
+                    ? `${item.total_hours} hrs`
+                    : '—'
+              }
+            }
+          )
+      })
+    } catch (
+      error:
+        any
+    ) {
+      console.error(
+        'Print report error:',
+        error
+      )
+
+      errorMessage.value =
+        error?.message ??
+        'Unable to open the print report.'
     }
   }
 </script>
 
 <style scoped>
-/* =========================================================
+/* ==========================================================================
    COMPONENT
-========================================================= */
+============================================================================ */
 
 .attendance-report {
   width: 100%;
 }
 
-/* =========================================================
+/* ==========================================================================
    SUMMARY
-========================================================= */
+============================================================================ */
+
+.summary-row {
+  margin-bottom: 16px;
+}
 
 .summary-card {
   height: 100%;
 
-  border: 1px solid #e7e9ed;
-  border-radius: 12px;
+  overflow: hidden;
+
+  border:
+    1px solid
+    #e5e9e6;
+
+  border-radius: 13px;
 
   background: #ffffff;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 3px 12px
+    rgba(
+      15,
+      23,
+      42,
+      0.022
+    );
+
+  transition:
+    transform
+      0.15s ease,
+    border-color
+      0.15s ease,
+    box-shadow
+      0.15s ease;
 }
 
-.summary-label {
-  color: #6b7280;
+.summary-card:hover {
+  transform:
+    translateY(-2px);
 
-  font-size: 0.72rem;
-  font-weight: 700;
+  border-color:
+    #d7e7db;
 
-  letter-spacing: 0.04em;
-
-  text-transform: uppercase;
+  box-shadow:
+    0 8px 20px
+    rgba(
+      15,
+      23,
+      42,
+      0.05
+    );
 }
 
-.summary-value {
-  margin-top: 5px;
+.summary-card-active {
+  border-color:
+    rgba(
+      22,
+      163,
+      74,
+      0.33
+    );
 
-  color: #1f2937;
+  background:
+    linear-gradient(
+      145deg,
+      #f8fcf9,
+      #ffffff
+    );
 
-  font-size: 1.8rem;
-  font-weight: 750;
-  line-height: 1.1;
+  box-shadow:
+    0 0 0
+    2px
+    rgba(
+      22,
+      163,
+      74,
+      0.045
+    );
 }
 
-.summary-description {
-  margin-top: 5px;
+.summary-content {
+  padding:
+    17px !important;
+}
 
-  color: #9ca3af;
+.summary-top {
+  display: flex;
 
-  font-size: 0.71rem;
+  align-items:
+    center;
+
+  justify-content:
+    space-between;
 }
 
 .summary-icon {
-  width: 42px;
-  height: 42px;
+  width: 39px;
+
+  height: 39px;
 
   display: flex;
-  align-items: center;
-  justify-content: center;
 
-  border-radius: 11px;
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  border-radius: 10px;
 }
 
-.icon-primary {
-  color: #15803d;
-  background: #ecfdf5;
+.icon-records {
+  background:
+    #edf9f1;
+
+  color:
+    #15803d;
 }
 
-.icon-success {
-  color: #16a34a;
-  background: #ecfdf5;
+.icon-on-time {
+  background:
+    #effbf3;
+
+  color:
+    #16a34a;
 }
 
-.icon-error {
-  color: #dc2626;
-  background: #fef2f2;
+.icon-late {
+  background:
+    #fff5f5;
+
+  color:
+    #dc2626;
 }
 
-.icon-warning {
-  color: #d97706;
-  background: #fffbeb;
+.icon-incomplete {
+  background:
+    #fff8eb;
+
+  color:
+    #d97706;
 }
 
-/* =========================================================
+.summary-tag {
+  color:
+    #9ca3af;
+
+  font-size:
+    0.51rem;
+
+  font-weight:
+    750;
+
+  letter-spacing:
+    0.07em;
+}
+
+.summary-value {
+  margin-top:
+    13px;
+
+  color:
+    #1f2937;
+
+  font-size:
+    1.75rem;
+
+  font-weight:
+    780;
+
+  line-height:
+    1;
+}
+
+.summary-label {
+  margin-top:
+    8px;
+
+  color:
+    #374151;
+
+  font-size:
+    0.71rem;
+
+  font-weight:
+    680;
+}
+
+.summary-description {
+  margin-top:
+    3px;
+
+  color:
+    #9ca3af;
+
+  font-size:
+    0.62rem;
+}
+
+.summary-action {
+  display: flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    space-between;
+
+  margin-top:
+    13px;
+
+  padding-top:
+    9px;
+
+  border-top:
+    1px solid
+    #f0f2f1;
+
+  color:
+    #a0a7b0;
+
+  font-size:
+    0.56rem;
+}
+
+/* ==========================================================================
    CARDS
-========================================================= */
+============================================================================ */
 
 .filter-card,
 .report-table-card {
   overflow: hidden;
 
-  border: 1px solid #e7e9ed;
-  border-radius: 12px;
+  border:
+    1px solid
+    #e5e9e6;
 
-  background: #ffffff;
+  border-radius: 13px;
+
+  background:
+    #ffffff;
+
+  box-shadow:
+    0 3px 14px
+    rgba(
+      15,
+      23,
+      42,
+      0.02
+    );
 }
 
-/* =========================================================
-   HEADER
-========================================================= */
+.filter-card {
+  margin-bottom: 16px;
+}
+
+/* ==========================================================================
+   HEADERS
+============================================================================ */
 
 .card-header,
 .table-toolbar {
-  min-height: 72px;
+  min-height: 70px;
 
   display: flex;
+
   align-items: center;
-  justify-content: space-between;
+
+  justify-content:
+    space-between;
 
   gap: 16px;
 
-  padding: 15px 18px;
+  padding:
+    14px 17px;
 }
 
-.section-title {
-  color: #1f2937;
-
-  font-size: 0.95rem;
-  font-weight: 700;
-}
-
-.section-subtitle {
-  margin-top: 2px;
-
-  color: #9ca3af;
-
-  font-size: 0.76rem;
-}
-
-/* =========================================================
-   FILTER
-========================================================= */
-
-.field-label {
-  margin-bottom: 7px;
-
-  color: #4b5563;
-
-  font-size: 0.74rem;
-  font-weight: 650;
-}
-
-.filter-actions {
+.card-heading {
   display: flex;
-  align-items: center;
 
-  gap: 10px;
-}
-
-.selected-range {
-  display: inline-flex;
-  align-items: center;
-
-  padding: 8px 12px;
-
-  border-radius: 8px;
-
-  background: #f0fdf4;
-
-  color: #4b5563;
-
-  font-size: 0.78rem;
-}
-
-/* =========================================================
-   SEARCH
-========================================================= */
-
-.search-field {
-  width: 280px;
-}
-
-/* =========================================================
-   TABLE
-========================================================= */
-
-:deep(.attendance-report-table thead th) {
-  height: 50px !important;
-
-  padding-left: 10px !important;
-  padding-right: 10px !important;
-
-  background: #fafafa !important;
-
-  border-bottom:
-    1px solid
-    #e5e7eb !important;
-
-  color: #4b5563 !important;
-
-  font-size: 0.7rem !important;
-  font-weight: 700 !important;
-
-  letter-spacing: 0.02em;
-
-  text-transform: uppercase;
-
-  white-space: nowrap;
-}
-
-:deep(.attendance-report-table tbody td) {
-  height: 62px !important;
-
-  padding-left: 10px !important;
-  padding-right: 10px !important;
-
-  border-bottom:
-    1px solid
-    #f0f1f3 !important;
-
-  color: #374151;
-
-  font-size: 0.8rem;
-
-  white-space: nowrap;
-}
-
-:deep(.attendance-report-table tbody tr:hover) {
-  background:
-    #f8faf9 !important;
-}
-
-/* =========================================================
-   EMPLOYEE
-========================================================= */
-
-.employee-cell {
-  display: flex;
-  align-items: center;
+  align-items:
+    center;
 
   gap: 9px;
 }
 
+.card-heading-icon {
+  width: 37px;
+
+  height: 37px;
+
+  display: flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  flex-shrink:
+    0;
+
+  border:
+    1px solid
+    #dceee1;
+
+  border-radius:
+    9px;
+
+  background:
+    #eff9f2;
+
+  color:
+    #15803d;
+}
+
+.section-title {
+  color:
+    #1f2937;
+
+  font-size:
+    0.89rem;
+
+  font-weight:
+    720;
+}
+
+.section-subtitle {
+  margin-top:
+    2px;
+
+  color:
+    #9ca3af;
+
+  font-size:
+    0.63rem;
+}
+
+.generated-chip {
+  font-size:
+    0.58rem;
+}
+
+/* ==========================================================================
+   QUICK RANGE
+============================================================================ */
+
+.quick-range-bar {
+  display: flex;
+
+  align-items:
+    center;
+
+  gap: 11px;
+
+  padding:
+    9px 17px;
+
+  background:
+    #fafbfa;
+}
+
+.quick-range-label {
+  color:
+    #8e969f;
+
+  font-size:
+    0.61rem;
+
+  font-weight:
+    650;
+}
+
+.quick-range-toggle {
+  overflow:
+    hidden;
+
+  border-radius:
+    8px;
+}
+
+:deep(
+  .quick-range-toggle
+  .v-btn
+) {
+  min-height:
+    29px;
+
+  padding-inline:
+    11px;
+
+  text-transform:
+    none;
+
+  font-size:
+    0.61rem;
+
+  letter-spacing:
+    0;
+}
+
+/* ==========================================================================
+   FILTER
+============================================================================ */
+
+.filter-content {
+  padding:
+    17px !important;
+}
+
+.field-label-row {
+  display: flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    space-between;
+
+  margin-bottom:
+    7px;
+}
+
+.field-label {
+  color:
+    #4b5563;
+
+  font-size:
+    0.67rem;
+
+  font-weight:
+    650;
+}
+
+.field-label-row > span {
+  color:
+    #a3aab2;
+
+  font-size:
+    0.52rem;
+
+  text-transform:
+    uppercase;
+}
+
+:deep(
+  .date-field
+  .v-field
+) {
+  border-radius:
+    9px;
+}
+
+.filter-actions {
+  display: flex;
+
+  align-items:
+    center;
+
+  gap:
+    8px;
+}
+
+.generate-button,
+.clear-button,
+.print-button {
+  min-height: 40px;
+
+  text-transform: none;
+
+  font-size:
+    0.65rem;
+
+  font-weight:
+    650;
+
+  letter-spacing:
+    0;
+
+  white-space:
+    nowrap;
+}
+
+/* ==========================================================================
+   GENERATED REPORT
+============================================================================ */
+
+.generated-report-info {
+  display: flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    space-between;
+
+  gap: 16px;
+
+  margin-top:
+    15px;
+
+  padding:
+    10px 12px;
+
+  border:
+    1px solid
+    #dcece1;
+
+  border-radius:
+    10px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #f4faf6,
+      #fbfdfb
+    );
+}
+
+.generated-period {
+  display: flex;
+
+  align-items:
+    center;
+
+  gap: 8px;
+}
+
+.generated-period-icon {
+  width: 32px;
+
+  height: 32px;
+
+  display: flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  flex-shrink:
+    0;
+
+  border-radius:
+    8px;
+
+  background:
+    #dff2e4;
+
+  color:
+    #15803d;
+}
+
+.generated-period-label {
+  color:
+    #929c95;
+
+  font-size:
+    0.51rem;
+
+  font-weight:
+    720;
+
+  letter-spacing:
+    0.06em;
+}
+
+.generated-period-value {
+  display: flex;
+
+  align-items:
+    center;
+
+  margin-top:
+    2px;
+
+  color:
+    #374151;
+
+  font-size:
+    0.64rem;
+
+  font-weight:
+    650;
+}
+
+.generated-time {
+  display: flex;
+
+  align-items:
+    center;
+
+  gap: 5px;
+
+  color:
+    #929aa4;
+
+  font-size:
+    0.56rem;
+}
+
+/* ==========================================================================
+   ERROR
+============================================================================ */
+
+.report-alert {
+  margin-bottom:
+    16px;
+}
+
+/* ==========================================================================
+   TABLE TOOLBAR
+============================================================================ */
+
+.toolbar-actions {
+  display: flex;
+
+  align-items:
+    center;
+
+  gap: 8px;
+}
+
+.status-filter {
+  width:
+    165px;
+}
+
+.search-field {
+  width:
+    235px;
+}
+
+:deep(
+  .status-filter
+  .v-field
+),
+:deep(
+  .search-field
+  .v-field
+) {
+  border-radius:
+    9px;
+}
+
+/* ==========================================================================
+   RESULTS BAR
+============================================================================ */
+
+.results-bar {
+  min-height:
+    38px;
+
+  display: flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    space-between;
+
+  gap: 12px;
+
+  padding:
+    8px 17px;
+
+  border-top:
+    1px solid
+    #f0f2f1;
+
+  background:
+    #fafbfa;
+
+  color:
+    #929aa4;
+
+  font-size:
+    0.58rem;
+}
+
+.results-left {
+  display: flex;
+
+  align-items:
+    center;
+
+  gap: 6px;
+}
+
+.report-result-status {
+  width:
+    6px;
+
+  height:
+    6px;
+
+  border-radius:
+    50%;
+
+  background:
+    #c5cbd0;
+}
+
+.report-result-status-active {
+  background:
+    #22c55e;
+
+  box-shadow:
+    0 0 0
+    4px
+    rgba(
+      34,
+      197,
+      94,
+      0.1
+    );
+}
+
+.results-divider {
+  color:
+    #c4c9ce;
+}
+
+.results-right strong {
+  color:
+    #4b5563;
+}
+
+/* ==========================================================================
+   TABLE
+============================================================================ */
+
+:deep(
+  .attendance-report-table
+  .v-table__wrapper
+) {
+  overflow-x:
+    auto;
+}
+
+:deep(
+  .attendance-report-table
+  thead
+  th
+) {
+  height:
+    47px !important;
+
+  padding-left:
+    9px !important;
+
+  padding-right:
+    9px !important;
+
+  border-bottom:
+    1px solid
+    #e8ebe9 !important;
+
+  background:
+    #fafbfa !important;
+
+  color:
+    #667085 !important;
+
+  font-size:
+    0.62rem !important;
+
+  font-weight:
+    720 !important;
+
+  letter-spacing:
+    0.035em;
+
+  text-transform:
+    uppercase;
+
+  white-space:
+    nowrap;
+}
+
+:deep(
+  .attendance-report-table
+  tbody
+  td
+) {
+  height:
+    62px !important;
+
+  padding-left:
+    9px !important;
+
+  padding-right:
+    9px !important;
+
+  border-bottom:
+    1px solid
+    #f0f2f1 !important;
+
+  color:
+    #374151;
+
+  font-size:
+    0.72rem;
+
+  white-space:
+    nowrap;
+}
+
+:deep(
+  .attendance-report-table
+  tbody
+  tr
+) {
+  transition:
+    background-color
+    0.15s ease;
+}
+
+:deep(
+  .attendance-report-table
+  tbody
+  tr:hover
+) {
+  background:
+    #f8fbf9 !important;
+}
+
+/* ==========================================================================
+   EMPLOYEE
+============================================================================ */
+
+.employee-cell {
+  display: flex;
+
+  align-items:
+    center;
+
+  gap: 9px;
+}
+
+.employee-avatar {
+  width:
+    36px;
+
+  height:
+    36px;
+
+  display: flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  flex-shrink:
+    0;
+
+  border:
+    1px solid
+    #d7eddd;
+
+  border-radius:
+    10px;
+
+  background:
+    #ebf8ef;
+
+  color:
+    #15803d;
+
+  font-size:
+    0.64rem;
+
+  font-weight:
+    760;
+}
+
 .employee-info {
-  min-width: 0;
+  min-width:
+    0;
 }
 
 .employee-name {
-  max-width: 180px;
+  max-width:
+    180px;
 
-  overflow: hidden;
+  overflow:
+    hidden;
 
-  color: #1f2937;
+  color:
+    #1f2937;
 
-  font-weight: 650;
+  font-size:
+    0.71rem;
 
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-weight:
+    680;
+
+  text-overflow:
+    ellipsis;
+
+  white-space:
+    nowrap;
 }
 
 .employee-subtitle {
-  margin-top: 2px;
+  margin-top:
+    2px;
 
-  color: #9ca3af;
+  color:
+    #9ca3af;
 
-  font-size: 0.67rem;
+  font-size:
+    0.56rem;
 }
 
-.avatar-text {
-  color: #15803d;
-
-  font-size: 0.68rem;
-  font-weight: 750;
-}
-
-/* =========================================================
+/* ==========================================================================
    DATE
-========================================================= */
+============================================================================ */
+
+.date-cell {
+  display: flex;
+
+  align-items:
+    center;
+
+  gap: 8px;
+}
+
+.date-calendar {
+  width:
+    36px;
+
+  height:
+    39px;
+
+  display: flex;
+
+  flex-direction:
+    column;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  flex-shrink:
+    0;
+
+  border:
+    1px solid
+    #dfe7e2;
+
+  border-radius:
+    8px;
+
+  background:
+    #f6faf7;
+}
+
+.date-calendar span {
+  color:
+    #374151;
+
+  font-size:
+    0.68rem;
+
+  font-weight:
+    760;
+
+  line-height:
+    1;
+}
+
+.date-calendar small {
+  margin-top:
+    3px;
+
+  color:
+    #15803d;
+
+  font-size:
+    0.44rem;
+
+  font-weight:
+    750;
+}
 
 .date-primary {
-  color: #374151;
+  color:
+    #374151;
 
-  font-weight: 600;
+  font-size:
+    0.65rem;
+
+  font-weight:
+    640;
 }
 
 .date-secondary {
-  margin-top: 2px;
+  margin-top:
+    2px;
 
-  color: #9ca3af;
+  color:
+    #9ca3af;
 
-  font-size: 0.67rem;
+  font-size:
+    0.54rem;
 }
 
-/* =========================================================
+/* ==========================================================================
    SCHEDULE
-========================================================= */
+============================================================================ */
 
 .schedule-cell {
   display: flex;
-  align-items: center;
 
-  color: #4b5563;
+  align-items:
+    center;
 
-  font-size: 0.77rem;
-  font-weight: 600;
-
-  white-space: nowrap;
+  gap: 7px;
 }
 
-.schedule-separator {
-  margin: 0 4px;
+.schedule-icon {
+  width:
+    28px;
 
-  color: #9ca3af;
+  height:
+    28px;
+
+  display: flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  flex-shrink:
+    0;
+
+  border-radius:
+    7px;
+
+  background:
+    #f1f3f2;
+
+  color:
+    #6b7280;
 }
 
-/* =========================================================
+.schedule-time {
+  color:
+    #4b5563;
+
+  font-size:
+    0.62rem;
+
+  font-weight:
+    640;
+}
+
+.schedule-name {
+  max-width:
+    115px;
+
+  margin-top:
+    2px;
+
+  overflow:
+    hidden;
+
+  color:
+    #9ca3af;
+
+  font-size:
+    0.52rem;
+
+  text-overflow:
+    ellipsis;
+
+  white-space:
+    nowrap;
+}
+
+.no-schedule {
+  display:
+    inline-flex;
+
+  align-items:
+    center;
+
+  gap:
+    4px;
+
+  color:
+    #adb4bc;
+
+  font-size:
+    0.58rem;
+}
+
+/* ==========================================================================
    TIME
-========================================================= */
+============================================================================ */
 
 .attendance-time {
   display: flex;
-  align-items: center;
 
-  font-size: 0.78rem;
-  font-weight: 650;
+  align-items:
+    center;
 
-  white-space: nowrap;
+  gap: 5px;
+}
+
+.time-icon {
+  width:
+    25px;
+
+  height:
+    25px;
+
+  display: flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  flex-shrink:
+    0;
+
+  border-radius:
+    7px;
+}
+
+.time-icon-in {
+  background:
+    #e9f8ee;
+
+  color:
+    #15803d;
+}
+
+.time-icon-out {
+  background:
+    #eff6ff;
+
+  color:
+    #2563eb;
 }
 
 .time-in {
-  color: #15803d;
+  color:
+    #15803d;
+
+  font-size:
+    0.64rem;
+
+  font-weight:
+    650;
 }
 
 .time-out {
-  color: #2563eb;
+  color:
+    #2563eb;
+
+  font-size:
+    0.64rem;
+
+  font-weight:
+    650;
 }
 
-/* =========================================================
-   TOTAL HOURS
-========================================================= */
+/* ==========================================================================
+   STATUS
+============================================================================ */
+
+.status-chip {
+  font-size:
+    0.56rem;
+}
+
+/* ==========================================================================
+   HOURS
+============================================================================ */
 
 .total-hours {
-  color: #374151;
+  display: flex;
 
-  font-weight: 700;
+  align-items:
+    baseline;
 
-  white-space: nowrap;
+  gap:
+    3px;
 }
 
-.total-hours span {
-  color: #9ca3af;
+.total-hours-value {
+  color:
+    #374151;
 
-  font-size: 0.67rem;
-  font-weight: 500;
+  font-size:
+    0.69rem;
+
+  font-weight:
+    740;
+}
+
+.total-hours-label {
+  color:
+    #9ca3af;
+
+  font-size:
+    0.52rem;
 }
 
 .empty-value {
-  color: #b0b5bd;
+  color:
+    #c1c6cc;
 }
 
-:deep(.attendance-report-table .v-chip) {
-  font-size: 0.68rem;
-}
-
-/* =========================================================
+/* ==========================================================================
    EMPTY
-========================================================= */
+============================================================================ */
 
 .empty-state {
-  padding: 60px 20px;
+  padding:
+    58px 20px;
 
-  text-align: center;
+  text-align:
+    center;
 }
 
 .empty-icon {
-  width: 66px;
-  height: 66px;
+  width:
+    62px;
+
+  height:
+    62px;
 
   display: flex;
-  align-items: center;
-  justify-content: center;
 
-  margin: 0 auto 13px;
+  align-items:
+    center;
 
-  border-radius: 50%;
+  justify-content:
+    center;
 
-  background: #f3f4f6;
+  margin:
+    0 auto 13px;
 
-  color: #9ca3af;
+  border-radius:
+    50%;
+
+  background:
+    #f2f6f3;
+
+  color:
+    #9fa8a2;
 }
 
 .empty-title {
-  color: #374151;
+  color:
+    #374151;
 
-  font-size: 0.95rem;
-  font-weight: 700;
+  font-size:
+    0.88rem;
+
+  font-weight:
+    700;
 }
 
 .empty-description {
-  margin-top: 5px;
+  max-width:
+    370px;
 
-  color: #9ca3af;
+  margin:
+    5px auto 0;
 
-  font-size: 0.78rem;
+  color:
+    #9ca3af;
+
+  font-size:
+    0.65rem;
+
+  line-height:
+    1.5;
 }
 
-/* =========================================================
-   RESPONSIVE
-========================================================= */
+/* ==========================================================================
+   TABLET
+============================================================================ */
 
-@media (max-width: 1100px) {
-  :deep(.attendance-report-table .v-table__wrapper) {
-    overflow-x: auto;
-  }
-}
-
-@media (max-width: 960px) {
+@media (
+  max-width: 960px
+) {
   .card-header,
   .table-toolbar {
-    align-items: stretch;
-    flex-direction: column;
+    align-items:
+      stretch;
+
+    flex-direction:
+      column;
+  }
+
+  .toolbar-actions {
+    width:
+      100%;
+
+    flex-wrap:
+      wrap;
+  }
+
+  .print-button {
+    flex-shrink:
+      0;
+  }
+
+  .status-filter {
+    width:
+      180px;
   }
 
   .search-field {
-    width: 100%;
+    flex:
+      1;
+
+    width:
+      auto;
+
+    min-width:
+      200px;
   }
 
   .filter-actions {
-    width: 100%;
+    width:
+      100%;
   }
 
   .filter-actions .v-btn {
-    flex: 1;
+    flex:
+      1;
+  }
+
+  .generated-report-info {
+    align-items:
+      flex-start;
+
+    flex-direction:
+      column;
   }
 }
 
-@media (max-width: 600px) {
+/* ==========================================================================
+   MOBILE
+============================================================================ */
+
+@media (
+  max-width: 600px
+) {
+  .summary-action {
+    display:
+      none;
+  }
+
+  .quick-range-bar {
+    align-items:
+      flex-start;
+
+    flex-direction:
+      column;
+  }
+
+  .quick-range-toggle {
+    width:
+      100%;
+  }
+
+  :deep(
+    .quick-range-toggle
+    .v-btn
+  ) {
+    flex:
+      1;
+  }
+
   .filter-actions {
-    align-items: stretch;
-    flex-direction: column;
+    align-items:
+      stretch;
+
+    flex-direction:
+      column;
   }
 
   .filter-actions .v-btn {
-    width: 100%;
+    width:
+      100%;
   }
 
-  .selected-range {
-    width: 100%;
+  .toolbar-actions {
+    align-items:
+      stretch;
 
-    align-items: flex-start;
-    flex-wrap: wrap;
+    flex-direction:
+      column;
+  }
+
+  .print-button,
+  .status-filter,
+  .search-field {
+    width:
+      100%;
+  }
+
+  .results-bar {
+    align-items:
+      flex-start;
+
+    flex-direction:
+      column;
+  }
+
+  .generated-period-value {
+    align-items:
+      flex-start;
+
+    flex-wrap:
+      wrap;
+  }
+}
+
+/* ==========================================================================
+   REDUCED MOTION
+============================================================================ */
+
+@media (
+  prefers-reduced-motion:
+  reduce
+) {
+  .summary-card {
+    transition:
+      none;
   }
 }
 </style>

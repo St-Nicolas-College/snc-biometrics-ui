@@ -3,8 +3,8 @@
     <!-- =========================================================
          SUMMARY CARDS
     ========================================================== -->
-    <v-row class="mb-5">
-      <!-- Employees -->
+    <v-row class="summary-row">
+      <!-- Late Employees -->
       <v-col
         cols="12"
         sm="6"
@@ -14,33 +14,45 @@
           elevation="0"
           class="summary-card"
         >
-          <v-card-text>
-            <div class="d-flex justify-space-between align-start">
-              <div>
-                <div class="summary-label">
-                  Late Employees
-                </div>
-
-                <div class="summary-value">
-                  {{ summary.length }}
-                </div>
-
-                <div class="summary-description">
-                  Employees with recorded lateness
-                </div>
-              </div>
-
-              <div class="summary-icon icon-primary">
-                <v-icon>
+          <v-card-text class="summary-content">
+            <div class="summary-top">
+              <div class="summary-icon icon-employees">
+                <v-icon size="20">
                   mdi-account-clock-outline
                 </v-icon>
               </div>
+
+              <span class="summary-tag">
+                EMPLOYEES
+              </span>
+            </div>
+
+            <div class="summary-value">
+              {{ lateEmployeeCount }}
+            </div>
+
+            <div class="summary-label">
+              Late Employees
+            </div>
+
+            <div class="summary-description">
+              Employees with recorded lateness
+            </div>
+
+            <div class="summary-footer">
+              <span>
+                {{ summary.length }} records analyzed
+              </span>
+
+              <v-icon size="14">
+                mdi-account-group-outline
+              </v-icon>
             </div>
           </v-card-text>
         </v-card>
       </v-col>
 
-      <!-- Total Minutes -->
+      <!-- Total Late -->
       <v-col
         cols="12"
         sm="6"
@@ -50,27 +62,39 @@
           elevation="0"
           class="summary-card"
         >
-          <v-card-text>
-            <div class="d-flex justify-space-between align-start">
-              <div>
-                <div class="summary-label">
-                  Total Late
-                </div>
-
-                <div class="summary-value text-error">
-                  {{ totalLateMinutes }}
-                </div>
-
-                <div class="summary-description">
-                  Minutes of accumulated lateness
-                </div>
-              </div>
-
-              <div class="summary-icon icon-error">
-                <v-icon>
+          <v-card-text class="summary-content">
+            <div class="summary-top">
+              <div class="summary-icon icon-total">
+                <v-icon size="20">
                   mdi-clock-alert-outline
                 </v-icon>
               </div>
+
+              <span class="summary-tag text-error">
+                ACCUMULATED
+              </span>
+            </div>
+
+            <div class="summary-value text-error">
+              {{ totalLateMinutes }}
+            </div>
+
+            <div class="summary-label">
+              Total Late Minutes
+            </div>
+
+            <div class="summary-description">
+              Combined employee lateness
+            </div>
+
+            <div class="summary-footer">
+              <span>
+                {{ totalLateDuration }}
+              </span>
+
+              <v-icon size="14">
+                mdi-timer-sand
+              </v-icon>
             </div>
           </v-card-text>
         </v-card>
@@ -86,27 +110,39 @@
           elevation="0"
           class="summary-card"
         >
-          <v-card-text>
-            <div class="d-flex justify-space-between align-start">
-              <div>
-                <div class="summary-label">
-                  Average Late
-                </div>
-
-                <div class="summary-value text-warning">
-                  {{ averageLateMinutes }}
-                </div>
-
-                <div class="summary-description">
-                  Average minutes per employee
-                </div>
-              </div>
-
-              <div class="summary-icon icon-warning">
-                <v-icon>
-                  mdi-timer-outline
+          <v-card-text class="summary-content">
+            <div class="summary-top">
+              <div class="summary-icon icon-average">
+                <v-icon size="20">
+                  mdi-chart-bell-curve-cumulative
                 </v-icon>
               </div>
+
+              <span class="summary-tag text-warning">
+                AVERAGE
+              </span>
+            </div>
+
+            <div class="summary-value text-warning">
+              {{ averageLateMinutes }}
+            </div>
+
+            <div class="summary-label">
+              Average Late
+            </div>
+
+            <div class="summary-description">
+              Average minutes per late employee
+            </div>
+
+            <div class="summary-footer">
+              <span>
+                Per late employee
+              </span>
+
+              <v-icon size="14">
+                mdi-chart-line
+              </v-icon>
             </div>
           </v-card-text>
         </v-card>
@@ -122,27 +158,42 @@
           elevation="0"
           class="summary-card"
         >
-          <v-card-text>
-            <div class="d-flex justify-space-between align-start">
-              <div>
-                <div class="summary-label">
-                  Highest Late
-                </div>
-
-                <div class="summary-value">
-                  {{ highestLateMinutes }}
-                </div>
-
-                <div class="summary-description">
-                  Maximum late minutes recorded
-                </div>
-              </div>
-
-              <div class="summary-icon icon-info">
-                <v-icon>
+          <v-card-text class="summary-content">
+            <div class="summary-top">
+              <div class="summary-icon icon-highest">
+                <v-icon size="20">
                   mdi-chart-line-variant
                 </v-icon>
               </div>
+
+              <span class="summary-tag summary-tag-purple">
+                HIGHEST
+              </span>
+            </div>
+
+            <div class="summary-value summary-value-purple">
+              {{ highestLateMinutes }}
+            </div>
+
+            <div class="summary-label">
+              Highest Late
+            </div>
+
+            <div class="summary-description latest-employee">
+              {{
+                highestLateEmployee?.employee_name ||
+                'No late record'
+              }}
+            </div>
+
+            <div class="summary-footer">
+              <span>
+                Maximum recorded minutes
+              </span>
+
+              <v-icon size="14">
+                mdi-arrow-up-bold-outline
+              </v-icon>
             </div>
           </v-card-text>
         </v-card>
@@ -154,16 +205,25 @@
     ========================================================== -->
     <v-card
       elevation="0"
-      class="filter-card mb-5"
+      class="filter-card"
     >
+      <!-- Header -->
       <div class="card-header">
-        <div>
-          <div class="section-title">
-            Late Summary Period
+        <div class="card-heading">
+          <div class="card-heading-icon">
+            <v-icon size="19">
+              mdi-calendar-range-outline
+            </v-icon>
           </div>
 
-          <div class="section-subtitle">
-            Select the date range to calculate employee lateness.
+          <div>
+            <div class="section-title">
+              Late Summary Period
+            </div>
+
+            <div class="section-subtitle">
+              Select the attendance period used to calculate employee lateness.
+            </div>
           </div>
         </div>
 
@@ -172,6 +232,7 @@
           size="small"
           variant="tonal"
           color="success"
+          class="generated-chip"
         >
           <v-icon
             start
@@ -186,7 +247,53 @@
 
       <v-divider />
 
-      <v-card-text class="pa-5">
+      <!-- =======================================================
+           QUICK RANGE
+      ======================================================== -->
+      <div class="quick-range-bar">
+        <div class="quick-range-label">
+          Quick Range
+        </div>
+
+        <v-btn-toggle
+          v-model="activeQuickRange"
+          color="primary"
+          variant="outlined"
+          density="compact"
+          class="quick-range-toggle"
+        >
+          <v-btn
+            value="today"
+            size="small"
+            @click="applyQuickRange('today')"
+          >
+            Today
+          </v-btn>
+
+          <v-btn
+            value="week"
+            size="small"
+            @click="applyQuickRange('week')"
+          >
+            This Week
+          </v-btn>
+
+          <v-btn
+            value="month"
+            size="small"
+            @click="applyQuickRange('month')"
+          >
+            This Month
+          </v-btn>
+        </v-btn-toggle>
+      </div>
+
+      <v-divider />
+
+      <!-- =======================================================
+           DATE FIELDS
+      ======================================================== -->
+      <v-card-text class="filter-content">
         <v-row align="end">
           <!-- Start Date -->
           <v-col
@@ -194,8 +301,14 @@
             sm="6"
             md="4"
           >
-            <div class="field-label">
-              Start Date
+            <div class="field-label-row">
+              <div class="field-label">
+                Start Date
+              </div>
+
+              <span>
+                Required
+              </span>
             </div>
 
             <v-date-input
@@ -206,6 +319,8 @@
               prepend-inner-icon="mdi-calendar-start-outline"
               variant="outlined"
               hide-details
+              class="date-field"
+              @update:model-value="activeQuickRange = null"
             />
           </v-col>
 
@@ -215,8 +330,14 @@
             sm="6"
             md="4"
           >
-            <div class="field-label">
-              End Date
+            <div class="field-label-row">
+              <div class="field-label">
+                End Date
+              </div>
+
+              <span>
+                Required
+              </span>
             </div>
 
             <v-date-input
@@ -227,10 +348,12 @@
               prepend-inner-icon="mdi-calendar-end-outline"
               variant="outlined"
               hide-details
+              class="date-field"
+              @update:model-value="activeQuickRange = null"
             />
           </v-col>
 
-          <!-- Buttons -->
+          <!-- Actions -->
           <v-col
             cols="12"
             md="4"
@@ -241,6 +364,7 @@
                 variant="flat"
                 prepend-icon="mdi-file-chart-outline"
                 :loading="loading"
+                class="generate-button"
                 @click="searchSummaryOfLate"
               >
                 Generate Report
@@ -255,6 +379,7 @@
                   !dateEnd &&
                   summary.length === 0
                 "
+                class="clear-button"
                 @click="clearReport"
               >
                 Clear
@@ -263,30 +388,51 @@
           </v-col>
         </v-row>
 
-        <!-- Active Period -->
+        <!-- =====================================================
+             GENERATED REPORT INFORMATION
+        ====================================================== -->
         <div
           v-if="hasGeneratedReport"
-          class="selected-range mt-4"
+          class="generated-report-info"
         >
-          <v-icon
-            size="17"
-            color="primary"
-            class="me-2"
+          <div class="generated-period">
+            <div class="generated-period-icon">
+              <v-icon size="18">
+                mdi-calendar-check-outline
+              </v-icon>
+            </div>
+
+            <div>
+              <div class="generated-period-label">
+                LATENESS REPORT PERIOD
+              </div>
+
+              <div class="generated-period-value">
+                {{ formatSelectedDate(dateStart) }}
+
+                <v-icon
+                  size="14"
+                  class="mx-1"
+                >
+                  mdi-arrow-right
+                </v-icon>
+
+                {{ formatSelectedDate(dateEnd) }}
+              </div>
+            </div>
+          </div>
+
+          <div
+            v-if="generatedAt"
+            class="generated-time"
           >
-            mdi-calendar-range
-          </v-icon>
+            <v-icon size="15">
+              mdi-clock-outline
+            </v-icon>
 
-          Late summary period:
-
-          <strong class="mx-1">
-            {{ formatSelectedDate(dateStart) }}
-          </strong>
-
-          to
-
-          <strong class="ms-1">
-            {{ formatSelectedDate(dateEnd) }}
-          </strong>
+            Generated
+            {{ formatGeneratedTime(generatedAt) }}
+          </div>
         </div>
       </v-card-text>
     </v-card>
@@ -298,12 +444,132 @@
       v-if="errorMessage"
       type="error"
       variant="tonal"
+      density="comfortable"
       closable
-      class="mb-5"
+      class="report-alert"
       @click:close="errorMessage = ''"
     >
       {{ errorMessage }}
     </v-alert>
+
+    <!-- =========================================================
+         LATENESS DISTRIBUTION
+    ========================================================== -->
+    <v-card
+      v-if="hasGeneratedReport"
+      elevation="0"
+      class="severity-card"
+    >
+      <div class="severity-header">
+        <div class="card-heading">
+          <div class="card-heading-icon warning-heading-icon">
+            <v-icon size="19">
+              mdi-chart-donut
+            </v-icon>
+          </div>
+
+          <div>
+            <div class="section-title">
+              Lateness Distribution
+            </div>
+
+            <div class="section-subtitle">
+              Breakdown of employees based on recorded late minutes.
+            </div>
+          </div>
+        </div>
+
+        <div class="severity-total">
+          {{ lateEmployeeCount }}
+          late employees
+        </div>
+      </div>
+
+      <v-divider />
+
+      <div class="severity-grid">
+        <!-- Minor -->
+        <button
+          type="button"
+          class="severity-item"
+          :class="{
+            'severity-selected':
+              severityFilter === 'minor'
+          }"
+          @click="toggleSeverity('minor')"
+        >
+          <div class="severity-indicator severity-minor" />
+
+          <div class="severity-copy">
+            <div class="severity-name">
+              Minor
+            </div>
+
+            <div class="severity-description">
+              1–15 minutes
+            </div>
+          </div>
+
+          <div class="severity-value">
+            {{ minorLateCount }}
+          </div>
+        </button>
+
+        <!-- Moderate -->
+        <button
+          type="button"
+          class="severity-item"
+          :class="{
+            'severity-selected':
+              severityFilter === 'moderate'
+          }"
+          @click="toggleSeverity('moderate')"
+        >
+          <div class="severity-indicator severity-moderate" />
+
+          <div class="severity-copy">
+            <div class="severity-name">
+              Moderate
+            </div>
+
+            <div class="severity-description">
+              16–30 minutes
+            </div>
+          </div>
+
+          <div class="severity-value">
+            {{ moderateLateCount }}
+          </div>
+        </button>
+
+        <!-- High -->
+        <button
+          type="button"
+          class="severity-item"
+          :class="{
+            'severity-selected':
+              severityFilter === 'high'
+          }"
+          @click="toggleSeverity('high')"
+        >
+          <div class="severity-indicator severity-high" />
+
+          <div class="severity-copy">
+            <div class="severity-name">
+              High
+            </div>
+
+            <div class="severity-description">
+              More than 30 minutes
+            </div>
+          </div>
+
+          <div class="severity-value">
+            {{ highLateCount }}
+          </div>
+        </button>
+      </div>
+    </v-card>
 
     <!-- =========================================================
          TABLE
@@ -312,35 +578,128 @@
       elevation="0"
       class="report-table-card"
     >
+      <!-- =======================================================
+           TOOLBAR
+      ======================================================== -->
       <div class="table-toolbar">
-        <div>
-          <div class="section-title">
-            Employee Late Summary
+        <div class="card-heading">
+          <div class="card-heading-icon">
+            <v-icon size="19">
+              mdi-account-clock-outline
+            </v-icon>
           </div>
 
-          <div class="section-subtitle">
-            Consolidated late attendance for the selected period.
+          <div>
+            <div class="section-title">
+              Employee Late Summary
+            </div>
+
+            <div class="section-subtitle">
+              Consolidated employee lateness for the selected report period.
+            </div>
           </div>
         </div>
 
-        <v-text-field
-          v-model="search"
-          density="compact"
-          placeholder="Search employee..."
-          prepend-inner-icon="mdi-magnify"
-          variant="outlined"
-          clearable
-          hide-details
-          class="search-field"
-        />
+        <div class="toolbar-actions">
+          <!-- Print -->
+          <v-btn
+            color="primary"
+            variant="outlined"
+            prepend-icon="mdi-printer-outline"
+            :disabled="
+              !hasGeneratedReport ||
+              filteredSummary.length === 0
+            "
+            class="print-button"
+            @click="printLateSummaryReport"
+          >
+            Print / PDF
+          </v-btn>
+
+          <!-- Severity Filter -->
+          <v-select
+            v-model="severityFilter"
+            :items="severityFilterOptions"
+            item-title="title"
+            item-value="value"
+            density="compact"
+            variant="outlined"
+            hide-details
+            prepend-inner-icon="mdi-filter-outline"
+            class="severity-filter"
+          />
+
+          <!-- Search -->
+          <v-text-field
+            v-model="search"
+            density="compact"
+            placeholder="Search employee..."
+            prepend-inner-icon="mdi-magnify"
+            variant="outlined"
+            clearable
+            hide-details
+            class="search-field"
+          />
+        </div>
+      </div>
+
+      <!-- =======================================================
+           RESULTS BAR
+      ======================================================== -->
+      <div class="results-bar">
+        <div class="results-left">
+          <div
+            class="report-result-status"
+            :class="{
+              'report-result-status-active':
+                hasGeneratedReport
+            }"
+          />
+
+          <span>
+            {{
+              hasGeneratedReport
+                ? 'Generated lateness summary'
+                : 'No report generated'
+            }}
+          </span>
+
+          <template v-if="hasGeneratedReport">
+            <span class="results-divider">
+              •
+            </span>
+
+            <span>
+              {{ reportPeriodText }}
+            </span>
+          </template>
+        </div>
+
+        <div class="results-right">
+          Showing
+
+          <strong>
+            {{ filteredSummary.length }}
+          </strong>
+
+          of
+
+          <strong>
+            {{ summary.length }}
+          </strong>
+
+          employees
+        </div>
       </div>
 
       <v-divider />
 
+      <!-- =======================================================
+           TABLE
+      ======================================================== -->
       <v-data-table
-        :items="summary"
+        :items="filteredSummary"
         :headers="headers"
-        :search="search"
         :loading="loading"
         :sort-by="defaultSort"
         density="comfortable"
@@ -359,18 +718,16 @@
         ====================================================== -->
         <template #[`item.employee_name`]="{ item }">
           <div class="employee-cell">
-            <v-avatar
-              size="36"
-              color="green-lighten-5"
-            >
-              <span class="avatar-text">
-                {{ getInitials(item.employee_name) }}
-              </span>
-            </v-avatar>
+            <div class="employee-avatar">
+              {{ getInitials(item.employee_name) }}
+            </div>
 
             <div class="employee-info">
               <div class="employee-name">
-                {{ item.employee_name || 'Unknown Employee' }}
+                {{
+                  item.employee_name ||
+                  'Unknown Employee'
+                }}
               </div>
 
               <div class="employee-subtitle">
@@ -381,20 +738,30 @@
         </template>
 
         <!-- =====================================================
-             CUTOFF PERIOD
+             REPORT PERIOD
         ====================================================== -->
         <template #[`item.cutoff_date`]="{ item }">
           <div class="period-cell">
-            <div class="period-main">
-              {{ formatDate(item.cutoff_start) }}
+            <div class="period-icon">
+              <v-icon size="15">
+                mdi-calendar-range-outline
+              </v-icon>
             </div>
 
-            <div class="period-separator">
-              to
-            </div>
+            <div class="period-copy">
+              <div class="period-main">
+                {{ formatDate(item.cutoff_start) }}
 
-            <div class="period-main">
-              {{ formatDate(item.cutoff_end) }}
+                <span>
+                  –
+                </span>
+
+                {{ formatDate(item.cutoff_end) }}
+              </div>
+
+              <div class="period-subtitle">
+                Report cutoff period
+              </div>
             </div>
           </div>
         </template>
@@ -403,37 +770,73 @@
              LATE MINUTES
         ====================================================== -->
         <template #[`item.late_minutes`]="{ item }">
-          <v-chip
-            v-if="Number(item.late_minutes ?? 0) > 0"
-            size="small"
-            variant="tonal"
-            :color="getLateColor(item.late_minutes)"
-          >
-            <v-icon
-              start
-              size="14"
+          <div class="late-minutes-cell">
+            <div
+              v-if="
+                getMinutes(item.late_minutes) > 0
+              "
+              class="late-value-row"
             >
-              mdi-clock-alert-outline
-            </v-icon>
+              <v-chip
+                size="small"
+                variant="tonal"
+                :color="
+                  getLateColor(
+                    item.late_minutes
+                  )
+                "
+                class="late-chip"
+              >
+                <v-icon
+                  start
+                  size="13"
+                >
+                  mdi-clock-alert-outline
+                </v-icon>
 
-            {{ item.late_minutes }} min
-          </v-chip>
+                {{ item.late_minutes }} min
+              </v-chip>
+            </div>
 
-          <v-chip
-            v-else
-            size="small"
-            variant="tonal"
-            color="success"
-          >
-            <v-icon
-              start
-              size="14"
+            <v-chip
+              v-else
+              size="small"
+              variant="tonal"
+              color="success"
+              class="late-chip"
             >
-              mdi-check-circle-outline
-            </v-icon>
+              <v-icon
+                start
+                size="13"
+              >
+                mdi-check-circle-outline
+              </v-icon>
 
-            On Time
-          </v-chip>
+              On Time
+            </v-chip>
+
+            <div
+              v-if="
+                getMinutes(item.late_minutes) > 0
+              "
+              class="late-progress"
+            >
+              <div
+                class="late-progress-value"
+                :class="
+                  getLateProgressClass(
+                    item.late_minutes
+                  )
+                "
+                :style="{
+                  width:
+                    getLateProgressWidth(
+                      item.late_minutes
+                    )
+                }"
+              />
+            </div>
+          </div>
         </template>
 
         <!-- =====================================================
@@ -443,9 +846,29 @@
           <v-chip
             size="small"
             variant="tonal"
-            :color="getLateLevel(item.late_minutes).color"
+            :color="
+              getLateLevel(
+                item.late_minutes
+              ).color
+            "
+            class="level-chip"
           >
-            {{ getLateLevel(item.late_minutes).label }}
+            <v-icon
+              start
+              size="13"
+            >
+              {{
+                getLateLevel(
+                  item.late_minutes
+                ).icon
+              }}
+            </v-icon>
+
+            {{
+              getLateLevel(
+                item.late_minutes
+              ).label
+            }}
           </v-chip>
         </template>
 
@@ -455,18 +878,45 @@
         <template #no-data>
           <div class="empty-state">
             <div class="empty-icon">
-              <v-icon size="36">
-                mdi-clock-check-outline
+              <v-icon size="35">
+                {{
+                  hasGeneratedReport
+                    ? 'mdi-clock-check-outline'
+                    : 'mdi-file-chart-outline'
+                }}
               </v-icon>
             </div>
 
             <div class="empty-title">
-              No late records found
+              {{
+                hasGeneratedReport
+                  ? 'No late records found'
+                  : 'No report generated'
+              }}
             </div>
 
             <div class="empty-description">
-              Select a date range and generate the late summary report.
+              {{
+                hasGeneratedReport
+                  ? 'Try changing the employee search or late-level filter.'
+                  : 'Select a reporting period above, then click Generate Report.'
+              }}
             </div>
+
+            <v-btn
+              v-if="
+                hasGeneratedReport &&
+                hasActiveTableFilters
+              "
+              color="primary"
+              variant="tonal"
+              size="small"
+              prepend-icon="mdi-filter-remove-outline"
+              class="mt-4"
+              @click="resetTableFilters"
+            >
+              Reset Table Filters
+            </v-btn>
           </div>
         </template>
       </v-data-table>
@@ -475,12 +925,15 @@
 </template>
 
 <script setup lang="ts">
-//@ts-nocheck
-/*
-|--------------------------------------------------------------------------
-| Types
-|--------------------------------------------------------------------------
-*/
+// @ts-nocheck
+
+import {
+  printReport
+} from '~/utils/printReport'
+
+/* ==========================================================================
+   TYPES
+============================================================================ */
 
 interface LateSummary {
   user_id: number
@@ -493,27 +946,30 @@ interface LateSummary {
   late_minutes?: number | string
 }
 
-/*
-|--------------------------------------------------------------------------
-| API Response
-|--------------------------------------------------------------------------
-*/
-
 interface LateSummaryResponse {
   data?: LateSummary[]
 }
 
-/*
-|--------------------------------------------------------------------------
-| State
-|--------------------------------------------------------------------------
-*/
+type SeverityFilter =
+  | 'all'
+  | 'minor'
+  | 'moderate'
+  | 'high'
+  | 'on-time'
+
+/* ==========================================================================
+   STATE
+============================================================================ */
 
 const dateStart =
-  ref<Date | null>(null)
+  ref<Date | null>(
+    null
+  )
 
 const dateEnd =
-  ref<Date | null>(null)
+  ref<Date | null>(
+    null
+  )
 
 const search =
   ref('')
@@ -530,138 +986,624 @@ const errorMessage =
 const hasGeneratedReport =
   ref(false)
 
-/*
-|--------------------------------------------------------------------------
-| Headers
-|--------------------------------------------------------------------------
-*/
+const generatedAt =
+  ref<Date | null>(
+    null
+  )
+
+const activeQuickRange =
+  ref<
+    'today' |
+    'week' |
+    'month' |
+    null
+  >(null)
+
+const severityFilter =
+  ref<SeverityFilter>(
+    'all'
+  )
+
+/* ==========================================================================
+   TABLE HEADERS
+============================================================================ */
 
 const headers = [
   {
-    title: 'Employee',
-    key: 'employee_name',
-    sortable: true
+    title:
+      'Employee',
+
+    key:
+      'employee_name',
+
+    sortable:
+      true,
+
+    minWidth:
+      260
   },
 
   {
-    title: 'Report Period',
-    key: 'cutoff_date',
-    sortable: false,
-    width: 240
+    title:
+      'Report Period',
+
+    key:
+      'cutoff_date',
+
+    sortable:
+      false,
+
+    minWidth:
+      245
   },
 
   {
-    title: 'Late Minutes',
-    key: 'late_minutes',
-    sortable: true,
-    width: 160
+    title:
+      'Late Minutes',
+
+    key:
+      'late_minutes',
+
+    sortable:
+      true,
+
+    width:
+      200
   },
 
   {
-    title: 'Late Level',
-    key: 'level',
-    sortable: false,
-    width: 140
+    title:
+      'Late Level',
+
+    key:
+      'level',
+
+    sortable:
+      false,
+
+    width:
+      150
   }
 ]
 
-/*
-|--------------------------------------------------------------------------
-| Default Sort
-|--------------------------------------------------------------------------
-*/
+/* ==========================================================================
+   DEFAULT SORT
+============================================================================ */
 
 const defaultSort =
   ref([
     {
-      key: 'late_minutes',
-      order: 'desc' as const
+      key:
+        'late_minutes',
+
+      order:
+        'desc' as const
     }
   ])
 
-/*
-|--------------------------------------------------------------------------
-| Summary Statistics
-|--------------------------------------------------------------------------
-*/
+/* ==========================================================================
+   FILTER OPTIONS
+============================================================================ */
+
+const severityFilterOptions = [
+  {
+    title:
+      'All Levels',
+
+    value:
+      'all'
+  },
+
+  {
+    title:
+      'Minor – 1 to 15 min',
+
+    value:
+      'minor'
+  },
+
+  {
+    title:
+      'Moderate – 16 to 30 min',
+
+    value:
+      'moderate'
+  },
+
+  {
+    title:
+      'High – Above 30 min',
+
+    value:
+      'high'
+  },
+
+  {
+    title:
+      'On Time',
+
+    value:
+      'on-time'
+  }
+]
+
+/* ==========================================================================
+   MINUTES
+============================================================================ */
+
+const getMinutes =
+  (
+    value?:
+      number |
+      string
+  ) => {
+    const minutes =
+      Number(
+        value ??
+        0
+      )
+
+    return Number.isFinite(
+      minutes
+    )
+      ? minutes
+      : 0
+  }
+
+/* ==========================================================================
+   SUMMARY STATISTICS
+============================================================================ */
+
+const lateEmployeeCount =
+  computed(
+    () => {
+      return summary.value
+        .filter(
+          item =>
+            getMinutes(
+              item.late_minutes
+            ) > 0
+        )
+        .length
+    }
+  )
 
 const totalLateMinutes =
-  computed(() => {
-    return summary.value.reduce(
-      (
-        total,
-        item
-      ) => {
-        return (
-          total +
-          Number(
-            item.late_minutes ??
-            0
-          )
+  computed(
+    () => {
+      return summary.value
+        .reduce(
+          (
+            total,
+            item
+          ) => {
+            return (
+              total +
+              getMinutes(
+                item.late_minutes
+              )
+            )
+          },
+          0
         )
-      },
-      0
-    )
-  })
+    }
+  )
 
 const averageLateMinutes =
-  computed(() => {
-    if (
-      summary.value.length === 0
-    ) {
-      return 0
-    }
+  computed(
+    () => {
+      const lateItems =
+        summary.value
+          .filter(
+            item =>
+              getMinutes(
+                item.late_minutes
+              ) > 0
+          )
 
-    return Math.round(
-      totalLateMinutes.value /
-      summary.value.length
-    )
-  })
+      if (
+        lateItems.length ===
+        0
+      ) {
+        return 0
+      }
+
+      const total =
+        lateItems.reduce(
+          (
+            sum,
+            item
+          ) => {
+            return (
+              sum +
+              getMinutes(
+                item.late_minutes
+              )
+            )
+          },
+          0
+        )
+
+      return Math.round(
+        total /
+        lateItems.length
+      )
+    }
+  )
 
 const highestLateMinutes =
-  computed(() => {
+  computed(
+    () => {
+      if (
+        summary.value.length ===
+        0
+      ) {
+        return 0
+      }
+
+      return Math.max(
+        ...summary.value.map(
+          item =>
+            getMinutes(
+              item.late_minutes
+            )
+        )
+      )
+    }
+  )
+
+const highestLateEmployee =
+  computed<
+    LateSummary |
+    null
+  >(
+    () => {
+      if (
+        summary.value.length ===
+        0
+      ) {
+        return null
+      }
+
+      return [
+        ...summary.value
+      ].sort(
+        (
+          a,
+          b
+        ) => {
+          return (
+            getMinutes(
+              b.late_minutes
+            ) -
+            getMinutes(
+              a.late_minutes
+            )
+          )
+        }
+      )[0] ??
+        null
+    }
+  )
+
+const totalLateDuration =
+  computed(
+    () => {
+      const minutes =
+        totalLateMinutes.value
+
+      if (
+        minutes <= 0
+      ) {
+        return '0 minutes'
+      }
+
+      const hours =
+        Math.floor(
+          minutes /
+          60
+        )
+
+      const remainder =
+        minutes %
+        60
+
+      if (
+        hours === 0
+      ) {
+        return (
+          `${remainder} minutes`
+        )
+      }
+
+      if (
+        remainder === 0
+      ) {
+        return (
+          `${hours} ${
+            hours === 1
+              ? 'hour'
+              : 'hours'
+          }`
+        )
+      }
+
+      return (
+        `${hours}h ${remainder}m`
+      )
+    }
+  )
+
+/* ==========================================================================
+   SEVERITY COUNTS
+============================================================================ */
+
+const minorLateCount =
+  computed(
+    () => {
+      return summary.value
+        .filter(
+          item => {
+            const minutes =
+              getMinutes(
+                item.late_minutes
+              )
+
+            return (
+              minutes > 0 &&
+              minutes <= 15
+            )
+          }
+        )
+        .length
+    }
+  )
+
+const moderateLateCount =
+  computed(
+    () => {
+      return summary.value
+        .filter(
+          item => {
+            const minutes =
+              getMinutes(
+                item.late_minutes
+              )
+
+            return (
+              minutes > 15 &&
+              minutes <= 30
+            )
+          }
+        )
+        .length
+    }
+  )
+
+const highLateCount =
+  computed(
+    () => {
+      return summary.value
+        .filter(
+          item =>
+            getMinutes(
+              item.late_minutes
+            ) > 30
+        )
+        .length
+    }
+  )
+
+/* ==========================================================================
+   LATE LEVEL KEY
+============================================================================ */
+
+const getLateLevelKey =
+  (
+    value?:
+      number |
+      string
+  ): SeverityFilter => {
+    const minutes =
+      getMinutes(
+        value
+      )
+
     if (
-      summary.value.length === 0
+      minutes <= 0
     ) {
-      return 0
+      return 'on-time'
     }
 
-    return Math.max(
-      ...summary.value.map(
-        item =>
-          Number(
-            item.late_minutes ??
-            0
-          )
-      )
-    )
-  })
+    if (
+      minutes <= 15
+    ) {
+      return 'minor'
+    }
 
-/*
-|--------------------------------------------------------------------------
-| Search Date Format
-|--------------------------------------------------------------------------
-|
-| Current backend endpoint expects:
-|
-| DD/MM/YYYY
-|
-*/
+    if (
+      minutes <= 30
+    ) {
+      return 'moderate'
+    }
+
+    return 'high'
+  }
+
+/* ==========================================================================
+   FILTERED SUMMARY
+============================================================================ */
+
+const filteredSummary =
+  computed(
+    () => {
+      let result = [
+        ...summary.value
+      ]
+
+      /* ================================================================
+         SEVERITY FILTER
+      ================================================================= */
+
+      if (
+        severityFilter.value !==
+        'all'
+      ) {
+        result =
+          result.filter(
+            item =>
+              getLateLevelKey(
+                item.late_minutes
+              ) ===
+              severityFilter.value
+          )
+      }
+
+      /* ================================================================
+         EMPLOYEE SEARCH
+      ================================================================= */
+
+      const keyword =
+        search.value
+          .trim()
+          .toLowerCase()
+
+      if (
+        keyword
+      ) {
+        result =
+          result.filter(
+            item => {
+              const searchableValues = [
+                item.employee_name,
+                item.user_id,
+                item.cutoff_start,
+                item.cutoff_end,
+                item.late_minutes,
+                getLateLevel(
+                  item.late_minutes
+                ).label
+              ]
+
+              return searchableValues
+                .some(
+                  value =>
+                    String(
+                      value ??
+                        ''
+                    )
+                      .toLowerCase()
+                      .includes(
+                        keyword
+                      )
+                )
+            }
+          )
+      }
+
+      return result
+    }
+  )
+
+const hasActiveTableFilters =
+  computed(
+    () => {
+      return (
+        Boolean(
+          search.value
+        ) ||
+        severityFilter.value !==
+          'all'
+      )
+    }
+  )
+
+const resetTableFilters =
+  () => {
+    search.value =
+      ''
+
+    severityFilter.value =
+      'all'
+  }
+
+/* ==========================================================================
+   TOGGLE SEVERITY
+============================================================================ */
+
+const toggleSeverity =
+  (
+    level:
+      SeverityFilter
+  ) => {
+    severityFilter.value =
+      severityFilter.value ===
+        level
+        ? 'all'
+        : level
+  }
+
+/* ==========================================================================
+   REPORT PERIOD
+============================================================================ */
+
+const reportPeriodText =
+  computed(
+    () => {
+      if (
+        !dateStart.value ||
+        !dateEnd.value
+      ) {
+        return ''
+      }
+
+      return (
+        `${formatSelectedDate(
+          dateStart.value
+        )} – ${formatSelectedDate(
+          dateEnd.value
+        )}`
+      )
+    }
+  )
+
+/* ==========================================================================
+   API DATE FORMAT
+============================================================================ */
 
 const formatSearchDate =
   (
-    value: Date
+    value:
+      Date
   ) => {
-    return value.toLocaleDateString(
-      'en-GB'
+    const day =
+      String(
+        value.getDate()
+      ).padStart(
+        2,
+        '0'
+      )
+
+    const month =
+      String(
+        value.getMonth() +
+          1
+      ).padStart(
+        2,
+        '0'
+      )
+
+    const year =
+      value.getFullYear()
+
+    return (
+      `${day}/${month}/${year}`
     )
   }
 
-/*
-|--------------------------------------------------------------------------
-| Generate Report
-|--------------------------------------------------------------------------
-*/
+/* ==========================================================================
+   GENERATE REPORT
+============================================================================ */
 
 const searchSummaryOfLate =
   async () => {
@@ -715,18 +1657,21 @@ const searchSummaryOfLate =
         )
 
       /*
-       * Your current backend previously returned:
+       * Supports:
        *
        * {
        *   data: [...]
        * }
        *
-       * This also supports an array response
-       * in case the API is changed later.
+       * and:
+       *
+       * [...]
        */
 
       if (
-        Array.isArray(result)
+        Array.isArray(
+          result
+        )
       ) {
         summary.value =
           result
@@ -738,7 +1683,21 @@ const searchSummaryOfLate =
 
       hasGeneratedReport.value =
         true
-    } catch (error) {
+
+      generatedAt.value =
+        new Date()
+
+      severityFilter.value =
+        'all'
+
+      search.value =
+        ''
+
+      errorMessage.value =
+        ''
+    } catch (
+      error
+    ) {
       console.error(
         'Late summary error:',
         error
@@ -750,6 +1709,9 @@ const searchSummaryOfLate =
       hasGeneratedReport.value =
         false
 
+      generatedAt.value =
+        null
+
       errorMessage.value =
         'Unable to generate the late summary report.'
     } finally {
@@ -758,11 +1720,90 @@ const searchSummaryOfLate =
     }
   }
 
-/*
-|--------------------------------------------------------------------------
-| Clear Report
-|--------------------------------------------------------------------------
-*/
+/* ==========================================================================
+   QUICK RANGE
+============================================================================ */
+
+const applyQuickRange =
+  async (
+    range:
+      'today' |
+      'week' |
+      'month'
+  ) => {
+    activeQuickRange.value =
+      range
+
+    const today =
+      new Date()
+
+    today.setHours(
+      0,
+      0,
+      0,
+      0
+    )
+
+    let startDate =
+      new Date(
+        today
+      )
+
+    /* ================================================================
+       THIS WEEK
+       Monday = first day
+    ================================================================= */
+
+    if (
+      range ===
+      'week'
+    ) {
+      const weekday =
+        today.getDay()
+
+      const mondayOffset =
+        weekday === 0
+          ? 6
+          : weekday - 1
+
+      startDate.setDate(
+        today.getDate() -
+          mondayOffset
+      )
+    }
+
+    /* ================================================================
+       THIS MONTH
+    ================================================================= */
+
+    if (
+      range ===
+      'month'
+    ) {
+      startDate =
+        new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          1
+        )
+    }
+
+    dateStart.value =
+      startDate
+
+    dateEnd.value =
+      new Date(
+        today
+      )
+
+    await nextTick()
+
+    await searchSummaryOfLate()
+  }
+
+/* ==========================================================================
+   CLEAR REPORT
+============================================================================ */
 
 const clearReport =
   () => {
@@ -783,29 +1824,42 @@ const clearReport =
 
     hasGeneratedReport.value =
       false
+
+    generatedAt.value =
+      null
+
+    activeQuickRange.value =
+      null
+
+    severityFilter.value =
+      'all'
   }
 
-/*
-|--------------------------------------------------------------------------
-| Initials
-|--------------------------------------------------------------------------
-*/
+/* ==========================================================================
+   EMPLOYEE INITIALS
+============================================================================ */
 
 const getInitials =
   (
-    name?: string
+    name?:
+      string
   ) => {
-    if (!name) {
+    if (
+      !name
+    ) {
       return '?'
     }
 
     const parts =
       name
         .trim()
-        .split(/\s+/)
+        .split(
+          /\s+/
+        )
 
     if (
-      parts.length === 1
+      parts.length ===
+      1
     ) {
       return parts[0]
         .substring(
@@ -818,46 +1872,68 @@ const getInitials =
     return (
       (
         parts[0]?.[0] ??
-        ''
+          ''
       ) +
       (
         parts[
-          parts.length - 1
+          parts.length -
+            1
         ]?.[0] ??
-        ''
+          ''
       )
     ).toUpperCase()
   }
 
-/*
-|--------------------------------------------------------------------------
-| Date Parser
-|--------------------------------------------------------------------------
-*/
+/* ==========================================================================
+   DATE PARSER
+============================================================================ */
 
 const parseDateValue =
   (
-    value?: string
+    value?:
+      string
   ) => {
-    if (!value) {
+    if (
+      !value
+    ) {
       return null
     }
 
+    const cleanValue =
+      String(
+        value
+      ).trim()
+
+    /*
+     * YYYY-MM-DD must be built
+     * as a local calendar date.
+     */
+
     const dateOnly =
-      value.match(
+      cleanValue.match(
         /^(\d{4})-(\d{2})-(\d{2})$/
       )
 
-    if (dateOnly) {
+    if (
+      dateOnly
+    ) {
       return new Date(
-        Number(dateOnly[1]),
-        Number(dateOnly[2]) - 1,
-        Number(dateOnly[3])
+        Number(
+          dateOnly[1]
+        ),
+        Number(
+          dateOnly[2]
+        ) - 1,
+        Number(
+          dateOnly[3]
+        )
       )
     }
 
     const date =
-      new Date(value)
+      new Date(
+        cleanValue
+      )
 
     if (
       Number.isNaN(
@@ -870,83 +1946,126 @@ const parseDateValue =
     return date
   }
 
-/*
-|--------------------------------------------------------------------------
-| Format Date
-|--------------------------------------------------------------------------
-*/
+/* ==========================================================================
+   FORMAT DATE
+============================================================================ */
 
 const formatDate =
   (
-    value?: string
+    value?:
+      string
   ) => {
     const date =
-      parseDateValue(value)
+      parseDateValue(
+        value
+      )
 
-    if (!date) {
+    if (
+      !date
+    ) {
       return '—'
     }
 
-    return date.toLocaleDateString(
-      'en-PH',
-      {
-        month: 'short',
-        day: '2-digit',
-        year: 'numeric'
-      }
-    )
+    return date
+      .toLocaleDateString(
+        'en-PH',
+        {
+          month:
+            'short',
+
+          day:
+            '2-digit',
+
+          year:
+            'numeric'
+        }
+      )
   }
 
-/*
-|--------------------------------------------------------------------------
-| Selected Date
-|--------------------------------------------------------------------------
-*/
+/* ==========================================================================
+   SELECTED DATE
+============================================================================ */
 
 const formatSelectedDate =
   (
-    value: Date | null
+    value:
+      Date |
+      null
   ) => {
-    if (!value) {
+    if (
+      !value
+    ) {
       return '—'
     }
 
-    return value.toLocaleDateString(
-      'en-PH',
-      {
-        month: 'short',
-        day: '2-digit',
-        year: 'numeric'
-      }
-    )
+    return value
+      .toLocaleDateString(
+        'en-PH',
+        {
+          month:
+            'short',
+
+          day:
+            '2-digit',
+
+          year:
+            'numeric'
+        }
+      )
   }
 
-/*
-|--------------------------------------------------------------------------
-| Late Level
-|--------------------------------------------------------------------------
-|
-| These levels are presentation labels only.
-| They do not change the backend computation.
-|
-*/
+/* ==========================================================================
+   GENERATED TIME
+============================================================================ */
+
+const formatGeneratedTime =
+  (
+    value:
+      Date
+  ) => {
+    return value
+      .toLocaleTimeString(
+        'en-PH',
+        {
+          hour:
+            '2-digit',
+
+          minute:
+            '2-digit',
+
+          hour12:
+            true
+        }
+      )
+  }
+
+/* ==========================================================================
+   LATE LEVEL
+============================================================================ */
 
 const getLateLevel =
   (
-    value?: number | string
+    value?:
+      number |
+      string
   ) => {
     const minutes =
-      Number(
-        value ??
-        0
+      getMinutes(
+        value
       )
 
     if (
       minutes <= 0
     ) {
       return {
-        label: 'On Time',
-        color: 'success'
+        label:
+          'On Time',
+
+        color:
+          'success',
+
+        icon:
+          'mdi-check-circle-outline'
       }
     }
 
@@ -954,8 +2073,14 @@ const getLateLevel =
       minutes <= 15
     ) {
       return {
-        label: 'Minor',
-        color: 'warning'
+        label:
+          'Minor',
+
+        color:
+          'warning',
+
+        icon:
+          'mdi-clock-outline'
       }
     }
 
@@ -963,435 +2088,1847 @@ const getLateLevel =
       minutes <= 30
     ) {
       return {
-        label: 'Moderate',
-        color: 'orange'
+        label:
+          'Moderate',
+
+        color:
+          'orange',
+
+        icon:
+          'mdi-clock-alert-outline'
       }
     }
 
     return {
-      label: 'High',
-      color: 'error'
+      label:
+        'High',
+
+      color:
+        'error',
+
+      icon:
+        'mdi-alert-circle-outline'
     }
   }
 
-/*
-|--------------------------------------------------------------------------
-| Late Color
-|--------------------------------------------------------------------------
-*/
+/* ==========================================================================
+   LATE COLOR
+============================================================================ */
 
 const getLateColor =
   (
-    value?: number | string
+    value?:
+      number |
+      string
+  ) => {
+    return getLateLevel(
+      value
+    ).color
+  }
+
+/* ==========================================================================
+   PROGRESS
+============================================================================ */
+
+const getLateProgressWidth =
+  (
+    value?:
+      number |
+      string
   ) => {
     const minutes =
-      Number(
-        value ??
-        0
+      getMinutes(
+        value
+      )
+
+    const highest =
+      highestLateMinutes.value
+
+    if (
+      minutes <= 0 ||
+      highest <= 0
+    ) {
+      return '0%'
+    }
+
+    const percentage =
+      Math.min(
+        100,
+        Math.max(
+          5,
+          (
+            minutes /
+            highest
+          ) *
+          100
+        )
+      )
+
+    return (
+      `${percentage}%`
+    )
+  }
+
+const getLateProgressClass =
+  (
+    value?:
+      number |
+      string
+  ) => {
+    const level =
+      getLateLevelKey(
+        value
       )
 
     if (
-      minutes <= 0
+      level === 'minor'
     ) {
-      return 'success'
+      return 'progress-minor'
     }
 
     if (
-      minutes <= 15
+      level === 'moderate'
     ) {
-      return 'warning'
+      return 'progress-moderate'
     }
 
     if (
-      minutes <= 30
+      level === 'high'
     ) {
-      return 'orange'
+      return 'progress-high'
     }
 
-    return 'error'
+    return ''
+  }
+
+/* ==========================================================================
+   PRINT / PDF
+============================================================================ */
+
+const printLateSummaryReport =
+  () => {
+    if (
+      !hasGeneratedReport.value ||
+      filteredSummary.value.length ===
+        0
+    ) {
+      return
+    }
+
+    const records =
+      filteredSummary.value
+
+    const lateRecords =
+      records.filter(
+        item =>
+          getMinutes(
+            item.late_minutes
+          ) > 0
+      )
+
+    const totalMinutes =
+      lateRecords.reduce(
+        (
+          total,
+          item
+        ) => {
+          return (
+            total +
+            getMinutes(
+              item.late_minutes
+            )
+          )
+        },
+        0
+      )
+
+    const averageMinutes =
+      lateRecords.length
+        ? Math.round(
+            totalMinutes /
+            lateRecords.length
+          )
+        : 0
+
+    const highestMinutes =
+      lateRecords.length
+        ? Math.max(
+            ...lateRecords.map(
+              item =>
+                getMinutes(
+                  item.late_minutes
+                )
+            )
+          )
+        : 0
+
+    try {
+      printReport({
+        title:
+          'Summary of Late Report',
+
+        subtitle:
+          'Consolidated employee lateness analysis',
+
+        period:
+          reportPeriodText.value,
+
+        orientation:
+          'portrait',
+
+        note:
+          hasActiveTableFilters.value
+            ? 'This report reflects the currently selected employee search or late-level filter.'
+            : undefined,
+
+        metrics: [
+          {
+            label:
+              'Late Employees',
+
+            value:
+              lateRecords.length
+          },
+
+          {
+            label:
+              'Total Late',
+
+            value:
+              `${totalMinutes} min`
+          },
+
+          {
+            label:
+              'Average Late',
+
+            value:
+              `${averageMinutes} min`
+          },
+
+          {
+            label:
+              'Highest Late',
+
+            value:
+              `${highestMinutes} min`
+          }
+        ],
+
+        columns: [
+          {
+            key:
+              'employee',
+
+            label:
+              'Employee'
+          },
+
+          {
+            key:
+              'user_id',
+
+            label:
+              'User ID',
+
+            align:
+              'center'
+          },
+
+          {
+            key:
+              'period',
+
+            label:
+              'Report Period'
+          },
+
+          {
+            key:
+              'late_minutes',
+
+            label:
+              'Late Minutes',
+
+            align:
+              'right'
+          },
+
+          {
+            key:
+              'level',
+
+            label:
+              'Late Level',
+
+            align:
+              'center'
+          }
+        ],
+
+        rows:
+          records.map(
+            item => {
+              const minutes =
+                getMinutes(
+                  item.late_minutes
+                )
+
+              return {
+                employee:
+                  item.employee_name ||
+                  'Unknown Employee',
+
+                user_id:
+                  item.user_id,
+
+                period:
+                  `${
+                    formatDate(
+                      item.cutoff_start
+                    )
+                  } - ${
+                    formatDate(
+                      item.cutoff_end
+                    )
+                  }`,
+
+                late_minutes:
+                  minutes > 0
+                    ? `${minutes} min`
+                    : '0 min',
+
+                level:
+                  getLateLevel(
+                    minutes
+                  ).label
+              }
+            }
+          )
+      })
+    } catch (
+      error:
+        any
+    ) {
+      console.error(
+        'Print late summary error:',
+        error
+      )
+
+      errorMessage.value =
+        error?.message ??
+        'Unable to open the print report.'
+    }
   }
 </script>
 
 <style scoped>
-/* =========================================================
+/* ==========================================================================
    COMPONENT
-========================================================= */
+============================================================================ */
 
 .late-summary-report {
   width: 100%;
 }
 
-/* =========================================================
+/* ==========================================================================
    SUMMARY
-========================================================= */
+============================================================================ */
+
+.summary-row {
+  margin-bottom: 16px;
+}
 
 .summary-card {
   height: 100%;
 
-  border: 1px solid #e7e9ed;
-  border-radius: 12px;
+  overflow: hidden;
+
+  border:
+    1px solid
+    #e5e9e6;
+
+  border-radius: 13px;
 
   background: #ffffff;
+
+  box-shadow:
+    0 3px 12px
+    rgba(
+      15,
+      23,
+      42,
+      0.022
+    );
+
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
-.summary-label {
-  color: #6b7280;
+.summary-card:hover {
+  transform:
+    translateY(-2px);
 
-  font-size: 0.72rem;
-  font-weight: 700;
+  border-color:
+    #d7e7db;
 
-  letter-spacing: 0.04em;
-
-  text-transform: uppercase;
+  box-shadow:
+    0 8px 20px
+    rgba(
+      15,
+      23,
+      42,
+      0.05
+    );
 }
 
-.summary-value {
-  margin-top: 5px;
-
-  color: #1f2937;
-
-  font-size: 1.8rem;
-  font-weight: 750;
-  line-height: 1.1;
+.summary-content {
+  padding:
+    17px !important;
 }
 
-.summary-description {
-  margin-top: 5px;
+.summary-top {
+  display: flex;
 
-  color: #9ca3af;
+  align-items: center;
 
-  font-size: 0.71rem;
+  justify-content:
+    space-between;
 }
 
 .summary-icon {
-  width: 42px;
-  height: 42px;
+  width: 39px;
+
+  height: 39px;
 
   display: flex;
+
   align-items: center;
-  justify-content: center;
 
-  border-radius: 11px;
+  justify-content:
+    center;
+
+  border-radius: 10px;
 }
 
-.icon-primary {
-  color: #15803d;
-  background: #ecfdf5;
+.icon-employees {
+  background:
+    #edf9f1;
+
+  color:
+    #15803d;
 }
 
-.icon-error {
-  color: #dc2626;
-  background: #fef2f2;
+.icon-total {
+  background:
+    #fff5f5;
+
+  color:
+    #dc2626;
 }
 
-.icon-warning {
-  color: #d97706;
-  background: #fffbeb;
+.icon-average {
+  background:
+    #fff8eb;
+
+  color:
+    #d97706;
 }
 
-.icon-info {
-  color: #2563eb;
-  background: #eff6ff;
+.icon-highest {
+  background:
+    #f5f3ff;
+
+  color:
+    #7c3aed;
 }
 
-/* =========================================================
+.summary-tag {
+  color:
+    #9ca3af;
+
+  font-size:
+    0.51rem;
+
+  font-weight:
+    750;
+
+  letter-spacing:
+    0.07em;
+}
+
+.summary-tag-purple {
+  color:
+    #7c3aed;
+}
+
+.summary-value {
+  margin-top:
+    13px;
+
+  color:
+    #1f2937;
+
+  font-size:
+    1.75rem;
+
+  font-weight:
+    780;
+
+  line-height:
+    1;
+}
+
+.summary-value-purple {
+  color:
+    #7c3aed;
+}
+
+.summary-label {
+  margin-top:
+    8px;
+
+  color:
+    #374151;
+
+  font-size:
+    0.71rem;
+
+  font-weight:
+    680;
+}
+
+.summary-description {
+  margin-top:
+    3px;
+
+  color:
+    #9ca3af;
+
+  font-size:
+    0.62rem;
+}
+
+.latest-employee {
+  max-width:
+    180px;
+
+  overflow:
+    hidden;
+
+  text-overflow:
+    ellipsis;
+
+  white-space:
+    nowrap;
+}
+
+.summary-footer {
+  display: flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    space-between;
+
+  margin-top:
+    13px;
+
+  padding-top:
+    9px;
+
+  border-top:
+    1px solid
+    #f0f2f1;
+
+  color:
+    #a0a7b0;
+
+  font-size:
+    0.56rem;
+}
+
+/* ==========================================================================
    CARDS
-========================================================= */
+============================================================================ */
 
 .filter-card,
+.severity-card,
 .report-table-card {
   overflow: hidden;
 
-  border: 1px solid #e7e9ed;
-  border-radius: 12px;
+  border:
+    1px solid
+    #e5e9e6;
 
-  background: #ffffff;
+  border-radius: 13px;
+
+  background:
+    #ffffff;
+
+  box-shadow:
+    0 3px 14px
+    rgba(
+      15,
+      23,
+      42,
+      0.02
+    );
 }
 
-/* =========================================================
+.filter-card,
+.severity-card {
+  margin-bottom:
+    16px;
+}
+
+/* ==========================================================================
    HEADER / TOOLBAR
-========================================================= */
+============================================================================ */
 
 .card-header,
-.table-toolbar {
-  min-height: 72px;
+.table-toolbar,
+.severity-header {
+  min-height:
+    70px;
 
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display:
+    flex;
 
-  gap: 16px;
+  align-items:
+    center;
 
-  padding: 15px 18px;
+  justify-content:
+    space-between;
+
+  gap:
+    16px;
+
+  padding:
+    14px 17px;
+}
+
+.card-heading {
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  gap:
+    9px;
+}
+
+.card-heading-icon {
+  width:
+    37px;
+
+  height:
+    37px;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  flex-shrink:
+    0;
+
+  border:
+    1px solid
+    #dceee1;
+
+  border-radius:
+    9px;
+
+  background:
+    #eff9f2;
+
+  color:
+    #15803d;
+}
+
+.warning-heading-icon {
+  border-color:
+    #fde8c8;
+
+  background:
+    #fff8eb;
+
+  color:
+    #d97706;
 }
 
 .section-title {
-  color: #1f2937;
+  color:
+    #1f2937;
 
-  font-size: 0.95rem;
-  font-weight: 700;
+  font-size:
+    0.89rem;
+
+  font-weight:
+    720;
 }
 
 .section-subtitle {
-  margin-top: 2px;
+  margin-top:
+    2px;
 
-  color: #9ca3af;
+  color:
+    #9ca3af;
 
-  font-size: 0.76rem;
+  font-size:
+    0.63rem;
 }
 
-/* =========================================================
+.generated-chip {
+  font-size:
+    0.58rem;
+}
+
+/* ==========================================================================
+   QUICK RANGE
+============================================================================ */
+
+.quick-range-bar {
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  gap:
+    11px;
+
+  padding:
+    9px 17px;
+
+  background:
+    #fafbfa;
+}
+
+.quick-range-label {
+  color:
+    #8e969f;
+
+  font-size:
+    0.61rem;
+
+  font-weight:
+    650;
+}
+
+.quick-range-toggle {
+  overflow:
+    hidden;
+
+  border-radius:
+    8px;
+}
+
+:deep(
+  .quick-range-toggle
+  .v-btn
+) {
+  min-height:
+    29px;
+
+  padding-inline:
+    11px;
+
+  text-transform:
+    none;
+
+  font-size:
+    0.61rem;
+
+  letter-spacing:
+    0;
+}
+
+/* ==========================================================================
    FILTER
-========================================================= */
+============================================================================ */
+
+.filter-content {
+  padding:
+    17px !important;
+}
+
+.field-label-row {
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    space-between;
+
+  margin-bottom:
+    7px;
+}
 
 .field-label {
-  margin-bottom: 7px;
+  color:
+    #4b5563;
 
-  color: #4b5563;
+  font-size:
+    0.67rem;
 
-  font-size: 0.74rem;
-  font-weight: 650;
+  font-weight:
+    650;
+}
+
+.field-label-row > span {
+  color:
+    #a3aab2;
+
+  font-size:
+    0.52rem;
+
+  text-transform:
+    uppercase;
+}
+
+:deep(
+  .date-field
+  .v-field
+) {
+  border-radius:
+    9px;
 }
 
 .filter-actions {
-  display: flex;
-  align-items: center;
+  display:
+    flex;
 
-  gap: 10px;
+  align-items:
+    center;
+
+  gap:
+    8px;
 }
 
-.selected-range {
-  display: inline-flex;
-  align-items: center;
+.generate-button,
+.clear-button,
+.print-button {
+  min-height:
+    40px;
 
-  padding: 8px 12px;
+  text-transform:
+    none;
 
-  border-radius: 8px;
+  font-size:
+    0.65rem;
 
-  background: #f0fdf4;
+  font-weight:
+    650;
 
-  color: #4b5563;
+  letter-spacing:
+    0;
 
-  font-size: 0.78rem;
+  white-space:
+    nowrap;
 }
 
-/* =========================================================
-   SEARCH
-========================================================= */
+/* ==========================================================================
+   GENERATED REPORT
+============================================================================ */
+
+.generated-report-info {
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    space-between;
+
+  gap:
+    16px;
+
+  margin-top:
+    15px;
+
+  padding:
+    10px 12px;
+
+  border:
+    1px solid
+    #dcece1;
+
+  border-radius:
+    10px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #f4faf6,
+      #fbfdfb
+    );
+}
+
+.generated-period {
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  gap:
+    8px;
+}
+
+.generated-period-icon {
+  width:
+    32px;
+
+  height:
+    32px;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  flex-shrink:
+    0;
+
+  border-radius:
+    8px;
+
+  background:
+    #dff2e4;
+
+  color:
+    #15803d;
+}
+
+.generated-period-label {
+  color:
+    #929c95;
+
+  font-size:
+    0.51rem;
+
+  font-weight:
+    720;
+
+  letter-spacing:
+    0.06em;
+}
+
+.generated-period-value {
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  margin-top:
+    2px;
+
+  color:
+    #374151;
+
+  font-size:
+    0.64rem;
+
+  font-weight:
+    650;
+}
+
+.generated-time {
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  gap:
+    5px;
+
+  color:
+    #929aa4;
+
+  font-size:
+    0.56rem;
+}
+
+/* ==========================================================================
+   ERROR
+============================================================================ */
+
+.report-alert {
+  margin-bottom:
+    16px;
+}
+
+/* ==========================================================================
+   SEVERITY
+============================================================================ */
+
+.severity-total {
+  color:
+    #9ca3af;
+
+  font-size:
+    0.59rem;
+}
+
+.severity-grid {
+  display:
+    grid;
+
+  grid-template-columns:
+    repeat(
+      3,
+      1fr
+    );
+
+  gap:
+    9px;
+
+  padding:
+    14px 17px;
+}
+
+.severity-item {
+  min-width:
+    0;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  gap:
+    9px;
+
+  padding:
+    11px 12px;
+
+  border:
+    1px solid
+    #e9ebe9;
+
+  border-radius:
+    10px;
+
+  background:
+    #ffffff;
+
+  color:
+    inherit;
+
+  cursor:
+    pointer;
+
+  font:
+    inherit;
+
+  text-align:
+    left;
+
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.severity-item:hover {
+  border-color:
+    #d8e4db;
+
+  background:
+    #fbfcfb;
+}
+
+.severity-selected {
+  border-color:
+    #c9e4d1;
+
+  background:
+    #f5faf6;
+}
+
+.severity-indicator {
+  width:
+    9px;
+
+  height:
+    34px;
+
+  flex-shrink:
+    0;
+
+  border-radius:
+    10px;
+}
+
+.severity-minor {
+  background:
+    #f59e0b;
+}
+
+.severity-moderate {
+  background:
+    #f97316;
+}
+
+.severity-high {
+  background:
+    #ef4444;
+}
+
+.severity-copy {
+  flex:
+    1;
+
+  min-width:
+    0;
+}
+
+.severity-name {
+  color:
+    #374151;
+
+  font-size:
+    0.67rem;
+
+  font-weight:
+    680;
+}
+
+.severity-description {
+  margin-top:
+    2px;
+
+  color:
+    #9ca3af;
+
+  font-size:
+    0.54rem;
+}
+
+.severity-value {
+  color:
+    #1f2937;
+
+  font-size:
+    1rem;
+
+  font-weight:
+    760;
+}
+
+/* ==========================================================================
+   TOOLBAR
+============================================================================ */
+
+.toolbar-actions {
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  gap:
+    8px;
+}
+
+.severity-filter {
+  width:
+    190px;
+}
 
 .search-field {
-  width: 280px;
+  width:
+    235px;
 }
 
-/* =========================================================
-   TABLE
-========================================================= */
+:deep(
+  .severity-filter
+  .v-field
+),
+:deep(
+  .search-field
+  .v-field
+) {
+  border-radius:
+    9px;
+}
 
-:deep(.late-summary-table thead th) {
-  height: 50px !important;
+/* ==========================================================================
+   RESULTS
+============================================================================ */
 
-  padding-left: 14px !important;
-  padding-right: 14px !important;
+.results-bar {
+  min-height:
+    38px;
 
-  background: #fafafa !important;
+  display:
+    flex;
 
-  border-bottom:
+  align-items:
+    center;
+
+  justify-content:
+    space-between;
+
+  gap:
+    12px;
+
+  padding:
+    8px 17px;
+
+  border-top:
     1px solid
-    #e5e7eb !important;
+    #f0f2f1;
 
-  color: #4b5563 !important;
-
-  font-size: 0.71rem !important;
-  font-weight: 700 !important;
-
-  letter-spacing: 0.02em;
-
-  text-transform: uppercase;
-
-  white-space: nowrap;
-}
-
-:deep(.late-summary-table tbody td) {
-  height: 64px !important;
-
-  padding-left: 14px !important;
-  padding-right: 14px !important;
-
-  border-bottom:
-    1px solid
-    #f0f1f3 !important;
-
-  color: #374151;
-
-  font-size: 0.82rem;
-}
-
-:deep(.late-summary-table tbody tr:hover) {
   background:
-    #f8faf9 !important;
+    #fafbfa;
+
+  color:
+    #929aa4;
+
+  font-size:
+    0.58rem;
 }
 
-/* =========================================================
+.results-left {
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  gap:
+    6px;
+}
+
+.report-result-status {
+  width:
+    6px;
+
+  height:
+    6px;
+
+  border-radius:
+    50%;
+
+  background:
+    #c5cbd0;
+}
+
+.report-result-status-active {
+  background:
+    #22c55e;
+
+  box-shadow:
+    0 0 0
+    4px
+    rgba(
+      34,
+      197,
+      94,
+      0.1
+    );
+}
+
+.results-divider {
+  color:
+    #c4c9ce;
+}
+
+.results-right strong {
+  color:
+    #4b5563;
+}
+
+/* ==========================================================================
+   TABLE
+============================================================================ */
+
+:deep(
+  .late-summary-table
+  .v-table__wrapper
+) {
+  overflow-x:
+    auto;
+}
+
+:deep(
+  .late-summary-table
+  thead
+  th
+) {
+  height:
+    47px !important;
+
+  padding-left:
+    12px !important;
+
+  padding-right:
+    12px !important;
+
+  border-bottom:
+    1px solid
+    #e8ebe9 !important;
+
+  background:
+    #fafbfa !important;
+
+  color:
+    #667085 !important;
+
+  font-size:
+    0.62rem !important;
+
+  font-weight:
+    720 !important;
+
+  letter-spacing:
+    0.035em;
+
+  text-transform:
+    uppercase;
+
+  white-space:
+    nowrap;
+}
+
+:deep(
+  .late-summary-table
+  tbody
+  td
+) {
+  height:
+    65px !important;
+
+  padding-left:
+    12px !important;
+
+  padding-right:
+    12px !important;
+
+  border-bottom:
+    1px solid
+    #f0f2f1 !important;
+
+  color:
+    #374151;
+
+  font-size:
+    0.72rem;
+}
+
+:deep(
+  .late-summary-table
+  tbody
+  tr
+) {
+  transition:
+    background-color
+    0.15s ease;
+}
+
+:deep(
+  .late-summary-table
+  tbody
+  tr:hover
+) {
+  background:
+    #f8fbf9 !important;
+}
+
+/* ==========================================================================
    EMPLOYEE
-========================================================= */
+============================================================================ */
 
 .employee-cell {
-  display: flex;
-  align-items: center;
+  display:
+    flex;
 
-  gap: 10px;
+  align-items:
+    center;
+
+  gap:
+    9px;
+}
+
+.employee-avatar {
+  width:
+    37px;
+
+  height:
+    37px;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  flex-shrink:
+    0;
+
+  border:
+    1px solid
+    #d7eddd;
+
+  border-radius:
+    10px;
+
+  background:
+    #ebf8ef;
+
+  color:
+    #15803d;
+
+  font-size:
+    0.64rem;
+
+  font-weight:
+    760;
 }
 
 .employee-info {
-  min-width: 0;
+  min-width:
+    0;
 }
 
 .employee-name {
-  max-width: 220px;
+  max-width:
+    220px;
 
-  overflow: hidden;
+  overflow:
+    hidden;
 
-  color: #1f2937;
+  color:
+    #1f2937;
 
-  font-weight: 650;
+  font-size:
+    0.72rem;
 
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-weight:
+    680;
+
+  text-overflow:
+    ellipsis;
+
+  white-space:
+    nowrap;
 }
 
 .employee-subtitle {
-  margin-top: 2px;
+  margin-top:
+    2px;
 
-  color: #9ca3af;
+  color:
+    #9ca3af;
 
-  font-size: 0.68rem;
+  font-size:
+    0.56rem;
 }
 
-.avatar-text {
-  color: #15803d;
-
-  font-size: 0.68rem;
-  font-weight: 750;
-}
-
-/* =========================================================
+/* ==========================================================================
    PERIOD
-========================================================= */
+============================================================================ */
 
 .period-cell {
-  display: flex;
-  align-items: center;
+  display:
+    flex;
 
-  gap: 7px;
+  align-items:
+    center;
 
-  white-space: nowrap;
+  gap:
+    8px;
+}
+
+.period-icon {
+  width:
+    30px;
+
+  height:
+    30px;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  flex-shrink:
+    0;
+
+  border-radius:
+    8px;
+
+  background:
+    #f1f3f2;
+
+  color:
+    #6b7280;
+}
+
+.period-copy {
+  min-width:
+    0;
 }
 
 .period-main {
-  color: #374151;
+  color:
+    #374151;
 
-  font-size: 0.8rem;
-  font-weight: 600;
+  font-size:
+    0.65rem;
+
+  font-weight:
+    640;
+
+  white-space:
+    nowrap;
 }
 
-.period-separator {
-  color: #9ca3af;
+.period-main span {
+  margin:
+    0 3px;
 
-  font-size: 0.7rem;
+  color:
+    #a0a7b0;
 }
 
-/* =========================================================
+.period-subtitle {
+  margin-top:
+    2px;
+
+  color:
+    #9ca3af;
+
+  font-size:
+    0.53rem;
+}
+
+/* ==========================================================================
+   LATE MINUTES
+============================================================================ */
+
+.late-minutes-cell {
+  min-width:
+    120px;
+}
+
+.late-value-row {
+  display:
+    flex;
+
+  align-items:
+    center;
+}
+
+.late-chip,
+.level-chip {
+  font-size:
+    0.57rem;
+}
+
+.late-progress {
+  overflow:
+    hidden;
+
+  width:
+    105px;
+
+  height:
+    3px;
+
+  margin-top:
+    6px;
+
+  border-radius:
+    10px;
+
+  background:
+    #f1f3f2;
+}
+
+.late-progress-value {
+  height:
+    100%;
+
+  border-radius:
+    inherit;
+
+  transition:
+    width 0.25s ease;
+}
+
+.progress-minor {
+  background:
+    #f59e0b;
+}
+
+.progress-moderate {
+  background:
+    #f97316;
+}
+
+.progress-high {
+  background:
+    #ef4444;
+}
+
+/* ==========================================================================
    EMPTY
-========================================================= */
+============================================================================ */
 
 .empty-state {
-  padding: 60px 20px;
+  padding:
+    58px 20px;
 
-  text-align: center;
+  text-align:
+    center;
 }
 
 .empty-icon {
-  width: 66px;
-  height: 66px;
+  width:
+    62px;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  height:
+    62px;
 
-  margin: 0 auto 13px;
+  display:
+    flex;
 
-  border-radius: 50%;
+  align-items:
+    center;
 
-  background: #f3f4f6;
+  justify-content:
+    center;
 
-  color: #9ca3af;
+  margin:
+    0 auto 13px;
+
+  border-radius:
+    50%;
+
+  background:
+    #f2f6f3;
+
+  color:
+    #9fa8a2;
 }
 
 .empty-title {
-  color: #374151;
+  color:
+    #374151;
 
-  font-size: 0.95rem;
-  font-weight: 700;
+  font-size:
+    0.88rem;
+
+  font-weight:
+    700;
 }
 
 .empty-description {
-  margin-top: 5px;
+  max-width:
+    370px;
 
-  color: #9ca3af;
+  margin:
+    5px auto 0;
 
-  font-size: 0.78rem;
+  color:
+    #9ca3af;
+
+  font-size:
+    0.65rem;
+
+  line-height:
+    1.5;
 }
 
-/* =========================================================
-   RESPONSIVE
-========================================================= */
+/* ==========================================================================
+   TABLET
+============================================================================ */
 
-@media (max-width: 960px) {
+@media (
+  max-width: 960px
+) {
   .card-header,
-  .table-toolbar {
-    align-items: stretch;
-    flex-direction: column;
+  .table-toolbar,
+  .severity-header {
+    align-items:
+      stretch;
+
+    flex-direction:
+      column;
+  }
+
+  .severity-grid {
+    grid-template-columns:
+      1fr;
+  }
+
+  .toolbar-actions {
+    width:
+      100%;
+
+    flex-wrap:
+      wrap;
+  }
+
+  .severity-filter {
+    width:
+      190px;
   }
 
   .search-field {
-    width: 100%;
+    flex:
+      1;
+
+    width:
+      auto;
+
+    min-width:
+      200px;
   }
 
   .filter-actions {
-    width: 100%;
+    width:
+      100%;
   }
 
   .filter-actions .v-btn {
-    flex: 1;
+    flex:
+      1;
+  }
+
+  .generated-report-info {
+    align-items:
+      flex-start;
+
+    flex-direction:
+      column;
   }
 }
 
-@media (max-width: 600px) {
+/* ==========================================================================
+   MOBILE
+============================================================================ */
+
+@media (
+  max-width: 600px
+) {
+  .summary-footer {
+    display:
+      none;
+  }
+
+  .quick-range-bar {
+    align-items:
+      flex-start;
+
+    flex-direction:
+      column;
+  }
+
+  .quick-range-toggle {
+    width:
+      100%;
+  }
+
+  :deep(
+    .quick-range-toggle
+    .v-btn
+  ) {
+    flex:
+      1;
+  }
+
   .filter-actions {
-    align-items: stretch;
-    flex-direction: column;
+    align-items:
+      stretch;
+
+    flex-direction:
+      column;
   }
 
   .filter-actions .v-btn {
-    width: 100%;
+    width:
+      100%;
   }
 
-  .selected-range {
-    width: 100%;
+  .toolbar-actions {
+    align-items:
+      stretch;
 
-    align-items: flex-start;
-    flex-wrap: wrap;
+    flex-direction:
+      column;
   }
 
-  .period-cell {
-    align-items: flex-start;
-    flex-direction: column;
-
-    gap: 1px;
+  .print-button,
+  .severity-filter,
+  .search-field {
+    width:
+      100%;
   }
 
-  .period-separator {
-    display: none;
+  .results-bar {
+    align-items:
+      flex-start;
+
+    flex-direction:
+      column;
+  }
+
+  .generated-period-value {
+    align-items:
+      flex-start;
+
+    flex-wrap:
+      wrap;
+  }
+
+  .period-main {
+    white-space:
+      normal;
+  }
+}
+
+/* ==========================================================================
+   REDUCED MOTION
+============================================================================ */
+
+@media (
+  prefers-reduced-motion:
+  reduce
+) {
+  .summary-card,
+  .severity-item,
+  .late-progress-value {
+    transition:
+      none;
   }
 }
 </style>

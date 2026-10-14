@@ -22,13 +22,18 @@ export default defineEventHandler(
               '2020-01-01'
         ),
 
+        /*
+        |--------------------------------------------------------------------------
+        | Group Attendance By Employee + Local Attendance Date
+        |--------------------------------------------------------------------------
+        */
+
         logs_by_day AS (
           SELECT
             user_id,
 
-            DATE(
-              "timestamp"
-            ) AS log_date,
+            "timestamp"::date
+              AS log_date,
 
             MIN(
               "timestamp"
@@ -38,31 +43,33 @@ export default defineEventHandler(
               "timestamp"
             ) AS max_time,
 
-            COUNT(*) AS entries
+            COUNT(*)
+              AS entries
 
           FROM
             valid_logs
 
           GROUP BY
             user_id,
-            DATE(
-              "timestamp"
-            )
+            "timestamp"::date
         ),
+
+        /*
+        |--------------------------------------------------------------------------
+        | Latest Punch Per Employee + Day
+        |--------------------------------------------------------------------------
+        */
 
         latest_punch AS (
           SELECT DISTINCT ON (
             user_id,
-            DATE(
-              "timestamp"
-            )
+            "timestamp"::date
           )
 
             user_id,
 
-            DATE(
-              "timestamp"
-            ) AS log_date,
+            "timestamp"::date
+              AS log_date,
 
             "timestamp"
               AS last_punch
@@ -73,9 +80,7 @@ export default defineEventHandler(
           ORDER BY
             user_id,
 
-            DATE(
-              "timestamp"
-            ),
+            "timestamp"::date,
 
             "timestamp" DESC
         )
@@ -88,7 +93,30 @@ export default defineEventHandler(
             'UNKNOWN USER'
           ) AS name,
 
-          l.log_date,
+          /*
+          |--------------------------------------------------------------------------
+          | IMPORTANT:
+          | Return date as TEXT instead of PostgreSQL DATE
+          |--------------------------------------------------------------------------
+          |
+          | This prevents Node/Nitro from converting:
+          |
+          |   2026-10-14
+          |
+          | into:
+          |
+          |   2026-10-13T16:00:00.000Z
+          |
+          | The frontend will receive exactly:
+          |
+          |   "2026-10-14"
+          |
+          */
+
+          TO_CHAR(
+            l.log_date,
+            'YYYY-MM-DD'
+          ) AS log_date,
 
           l.in_time,
 
@@ -118,6 +146,11 @@ export default defineEventHandler(
               IN (1, 2, 5)
               THEN l.max_time
 
+            /*
+             * Historical TCP logs don't
+             * contain ADMS punch status.
+             */
+
             WHEN l.entries = 1
               THEN NULL
 
@@ -136,11 +169,12 @@ export default defineEventHandler(
 
           /*
           |--------------------------------------------------------------------------
-          | Actual Current Status
+          | Current Attendance Status
           |--------------------------------------------------------------------------
           */
 
-          CASE p.punch_status
+          CASE
+            p.punch_status
 
             WHEN 0
               THEN 'CLOCKED IN'
@@ -163,10 +197,12 @@ export default defineEventHandler(
             /*
              * Historical TCP records
              * don't have ADMS metadata.
+             *
+             * One punch = currently in
+             * More than one = clocked out
              */
 
             ELSE
-
               CASE
 
                 WHEN l.entries = 1
@@ -181,21 +217,26 @@ export default defineEventHandler(
 
           /*
           |--------------------------------------------------------------------------
-          | Hours
+          | Total Hours
           |--------------------------------------------------------------------------
           */
 
           CASE
 
+            /*
+             * User is currently inside.
+             */
             WHEN p.punch_status
               IN (0, 3, 4)
               THEN NULL
 
+            /*
+             * Only one historical punch.
+             */
             WHEN l.entries = 1
               THEN NULL
 
             ELSE
-
               ROUND(
                 (
                   EXTRACT(
@@ -211,15 +252,29 @@ export default defineEventHandler(
 
           END AS total_hours,
 
-          TRIM(
-            TO_CHAR(
-              l.log_date,
-              'Day'
-            )
+          /*
+          |--------------------------------------------------------------------------
+          | Weekday
+          |--------------------------------------------------------------------------
+          |
+          | FMDay removes the trailing spaces
+          | PostgreSQL normally adds to Day.
+          |
+          */
+
+          TO_CHAR(
+            l.log_date,
+            'FMDay'
           ) AS day
 
         FROM
           logs_by_day l
+
+        /*
+        |--------------------------------------------------------------------------
+        | Latest Punch
+        |--------------------------------------------------------------------------
+        */
 
         JOIN
           latest_punch lp
@@ -232,12 +287,24 @@ export default defineEventHandler(
             lp.log_date =
               l.log_date
 
+        /*
+        |--------------------------------------------------------------------------
+        | User Account
+        |--------------------------------------------------------------------------
+        */
+
         LEFT JOIN
           public.user_accounts u
 
           ON
             u.user_id =
               l.user_id
+
+        /*
+        |--------------------------------------------------------------------------
+        | ADMS Punch Metadata
+        |--------------------------------------------------------------------------
+        */
 
         LEFT JOIN
           public.zkteco_adms_punches p
@@ -249,6 +316,12 @@ export default defineEventHandler(
             AND
             p."timestamp" =
               lp.last_punch
+
+        /*
+        |--------------------------------------------------------------------------
+        | Latest Activity First
+        |--------------------------------------------------------------------------
+        */
 
         ORDER BY
           lp.last_punch DESC
