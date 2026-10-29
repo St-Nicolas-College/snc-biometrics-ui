@@ -679,6 +679,8 @@ const now = ref(new Date());
 
 let clockTimer: ReturnType<typeof setInterval> | null = null;
 
+let fallbackRefreshTimer: ReturnType<typeof setInterval> | null = null;
+
 const currentTime = computed(() => {
   return now.value.toLocaleTimeString("en-PH", {
     hour: "2-digit",
@@ -1253,13 +1255,50 @@ const formatLastUpdated = (value: Date) => {
 ============================================================================ */
 
 onMounted(async () => {
+  /* ================================================================
+       CLOCK
+    ================================================================= */
+
   clockTimer = setInterval(() => {
     now.value = new Date();
   }, 1000);
 
+  /* ================================================================
+       INITIAL ATTENDANCE
+    ================================================================= */
+
   await fetchAttendance(true);
 
+  /* ================================================================
+       REAL-TIME SSE
+    ================================================================= */
+
   connectRealtime();
+
+  /* ================================================================
+       FALLBACK REFRESH
+    ================================================================= */
+
+  /*
+   * SSE remains the primary real-time
+   * mechanism.
+   *
+   * This is only a safety net in case
+   * an SSE message is missed.
+   */
+
+  fallbackRefreshTimer = setInterval(async () => {
+    /*
+     * Avoid interfering while
+     * another fetch is active.
+     */
+
+    if (loading.value || refreshing.value) {
+      return;
+    }
+
+    await fetchAttendance();
+  }, 10000);
 });
 
 onBeforeUnmount(() => {
@@ -1279,6 +1318,12 @@ onBeforeUnmount(() => {
     eventSource.close();
 
     eventSource = null;
+  }
+
+  if (fallbackRefreshTimer) {
+    clearInterval(fallbackRefreshTimer);
+
+    fallbackRefreshTimer = null;
   }
 
   realtimeConnected.value = false;

@@ -36,10 +36,10 @@ export default defineEventHandler(async (event) => {
   const remember = Boolean(body?.remember);
 
   /*
-    |--------------------------------------------------------------------------
-    | Validate Input
-    |--------------------------------------------------------------------------
-    */
+  |--------------------------------------------------------------------------
+  | Validate Input
+  |--------------------------------------------------------------------------
+  */
 
   if (!identifier) {
     throw createError({
@@ -57,10 +57,10 @@ export default defineEventHandler(async (event) => {
 
   try {
     /*
-      |--------------------------------------------------------------------------
-      | Authenticate With Strapi
-      |--------------------------------------------------------------------------
-      */
+    |--------------------------------------------------------------------------
+    | Authenticate With Strapi
+    |--------------------------------------------------------------------------
+    */
 
     const response = await $fetch<StrapiLoginResponse>(
       `${config.strapiUrl}/api/auth/local`,
@@ -75,10 +75,10 @@ export default defineEventHandler(async (event) => {
     );
 
     /*
-      |--------------------------------------------------------------------------
-      | Validate Strapi Response
-      |--------------------------------------------------------------------------
-      */
+    |--------------------------------------------------------------------------
+    | Validate Strapi Response
+    |--------------------------------------------------------------------------
+    */
 
     if (!response?.jwt) {
       throw createError({
@@ -88,10 +88,10 @@ export default defineEventHandler(async (event) => {
     }
 
     /*
-      |--------------------------------------------------------------------------
-      | Check Blocked User
-      |--------------------------------------------------------------------------
-      */
+    |--------------------------------------------------------------------------
+    | Check Blocked User
+    |--------------------------------------------------------------------------
+    */
 
     if (response.user?.blocked) {
       throw createError({
@@ -101,10 +101,36 @@ export default defineEventHandler(async (event) => {
     }
 
     /*
-      |--------------------------------------------------------------------------
-      | Cookie Options
-      |--------------------------------------------------------------------------
-      */
+    |--------------------------------------------------------------------------
+    | Cookie Security
+    |--------------------------------------------------------------------------
+    |
+    | IMPORTANT:
+    |
+    | Docker production mode does NOT automatically mean HTTPS.
+    |
+    | Current LAN deployment:
+    |
+    | http://192.168.254.209:3008
+    |
+    | AUTH_COOKIE_SECURE=false
+    |
+    | Future HTTPS deployment:
+    |
+    | AUTH_COOKIE_SECURE=true
+    |
+    */
+
+    const secureCookie =
+      String(process.env.AUTH_COOKIE_SECURE ?? "false")
+        .trim()
+        .toLowerCase() === "true";
+
+    /*
+    |--------------------------------------------------------------------------
+    | Cookie Options
+    |--------------------------------------------------------------------------
+    */
 
     const cookieOptions: {
       httpOnly: boolean;
@@ -115,12 +141,7 @@ export default defineEventHandler(async (event) => {
     } = {
       httpOnly: true,
 
-      /*
-       * If your production system still
-       * uses HTTP over LAN, change this
-       * to false until HTTPS is configured.
-       */
-      secure: process.env.NODE_ENV === "production",
+      secure: secureCookie,
 
       sameSite: "lax",
 
@@ -128,32 +149,52 @@ export default defineEventHandler(async (event) => {
     };
 
     /*
-      |--------------------------------------------------------------------------
-      | Remember Me
-      |--------------------------------------------------------------------------
-      |
-      | Remember = 30 days
-      | Otherwise = browser session
-      |
-      */
+    |--------------------------------------------------------------------------
+    | Remember Me
+    |--------------------------------------------------------------------------
+    |
+    | Remember = 30 days
+    | Otherwise = browser session
+    |
+    */
 
     if (remember) {
       cookieOptions.maxAge = 60 * 60 * 24 * 30;
     }
 
     /*
-      |--------------------------------------------------------------------------
-      | Store JWT
-      |--------------------------------------------------------------------------
-      */
+    |--------------------------------------------------------------------------
+    | Store JWT
+    |--------------------------------------------------------------------------
+    */
 
-    setCookie(event, "snc_auth_token", response.jwt, cookieOptions);
+    setCookie(
+      event,
+      "snc_auth_token",
+      response.jwt,
+      cookieOptions,
+    );
 
     /*
-      |--------------------------------------------------------------------------
-      | Return Logged In User
-      |--------------------------------------------------------------------------
-      */
+    |--------------------------------------------------------------------------
+    | Development / Deployment Debug
+    |--------------------------------------------------------------------------
+    |
+    | Does NOT print the JWT.
+    |
+    */
+
+    console.log("[Auth] Login successful:", {
+      username: response.user.username,
+      secureCookie,
+      remember,
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Return Logged In User
+    |--------------------------------------------------------------------------
+    */
 
     return {
       success: true,
@@ -176,10 +217,10 @@ export default defineEventHandler(async (event) => {
     };
   } catch (error: any) {
     /*
-      |--------------------------------------------------------------------------
-      | Read Error Status
-      |--------------------------------------------------------------------------
-      */
+    |--------------------------------------------------------------------------
+    | Read Error Status
+    |--------------------------------------------------------------------------
+    */
 
     const statusCode =
       error?.statusCode ??
@@ -189,27 +230,25 @@ export default defineEventHandler(async (event) => {
       500;
 
     /*
-      |--------------------------------------------------------------------------
-      | Debug Server Only
-      |--------------------------------------------------------------------------
-      |
-      | Do not send Strapi's raw authentication
-      | error back to the browser.
-      |
-      */
+    |--------------------------------------------------------------------------
+    | Debug Server Only
+    |--------------------------------------------------------------------------
+    */
 
     console.error("Strapi authentication failed:", {
       statusCode,
 
       message:
-        error?.data?.error?.message ?? error?.statusMessage ?? error?.message,
+        error?.data?.error?.message ??
+        error?.statusMessage ??
+        error?.message,
     });
 
     /*
-      |--------------------------------------------------------------------------
-      | Blocked Account
-      |--------------------------------------------------------------------------
-      */
+    |--------------------------------------------------------------------------
+    | Blocked Account
+    |--------------------------------------------------------------------------
+    */
 
     if (statusCode === 403) {
       throw createError({
@@ -219,14 +258,10 @@ export default defineEventHandler(async (event) => {
     }
 
     /*
-      |--------------------------------------------------------------------------
-      | Invalid Credentials
-      |--------------------------------------------------------------------------
-      |
-      | Strapi commonly returns 400 when the
-      | identifier/password combination is wrong.
-      |
-      */
+    |--------------------------------------------------------------------------
+    | Invalid Credentials
+    |--------------------------------------------------------------------------
+    */
 
     if (statusCode === 400 || statusCode === 401) {
       throw createError({
@@ -236,13 +271,14 @@ export default defineEventHandler(async (event) => {
     }
 
     /*
-      |--------------------------------------------------------------------------
-      | Strapi Unavailable / Server Problem
-      |--------------------------------------------------------------------------
-      */
+    |--------------------------------------------------------------------------
+    | Authentication Service Problem
+    |--------------------------------------------------------------------------
+    */
 
     throw createError({
       statusCode: 500,
+
       statusMessage:
         "Unable to connect to the authentication service. Please try again.",
     });
