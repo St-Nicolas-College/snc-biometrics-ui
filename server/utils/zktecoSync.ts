@@ -313,15 +313,35 @@ const getUserCard = (user: ZktecoUser) => {
 };
 
 /* ==========================================================================
-   UPSERT USER
+   UPSERT BIOMETRIC USER
 ============================================================================ */
 
 /*
- * This intentionally does not require
- * an ON CONFLICT(user_id) unique index.
+ * USER SYNC POLICY
  *
- * It first updates an existing account.
- * If no user exists, it inserts one.
+ * Biometric device controlled:
+ *
+ * - user_id
+ * - uid
+ * - role
+ * - card_no
+ *
+ * System controlled:
+ *
+ * - name
+ * - department
+ * - department_docid
+ * - department_id
+ *
+ * IMPORTANT:
+ *
+ * The biometric name is only used when
+ * creating a NEW user or when the local
+ * database name is empty.
+ *
+ * This prevents periodic biometric sync
+ * from restoring an old employee name
+ * after it has been edited in the system.
  */
 
 const upsertUser = async (user: ZktecoUser) => {
@@ -331,22 +351,69 @@ const upsertUser = async (user: ZktecoUser) => {
     return false;
   }
 
+  /* ================================================================
+       DEVICE UID
+    ================================================================= */
+
   const uid = Number(user.uid ?? 0);
+
+  /* ================================================================
+       DEVICE ROLE
+    ================================================================= */
 
   const role = Number(user.role ?? 0);
 
-  const name = String(user.name ?? "").trim();
+  /* ================================================================
+       DEVICE NAME
+    ================================================================= */
+
+  const deviceName = String(user.name ?? "").trim();
+
+  /* ================================================================
+       CARD NUMBER
+    ================================================================= */
 
   const cardNo = getUserCard(user);
 
-  /*
-   * We don't overwrite a good existing
-   * employee name with a blank device name.
-   */
-  await query(
+  /* ================================================================
+       CHECK EXISTING USER
+    ================================================================= */
+
+  const existingResult = await query(
     `
-      WITH updated AS
-      (
+        SELECT
+          user_id,
+          uid,
+          role,
+          name,
+          card_no
+        FROM
+          public.user_accounts
+        WHERE
+          user_id = $1
+        LIMIT 1
+        `,
+    [userId],
+  );
+
+  const existingUser = existingResult?.rows?.[0];
+
+  /* ================================================================
+       EXISTING USER
+    ================================================================= */
+
+  if (existingUser) {
+    /*
+     * Do NOT replace an existing local
+     * employee name with the biometric
+     * device name.
+     *
+     * Only use the biometric name when
+     * the local name is empty.
+     */
+
+    await query(
+      `
         UPDATE
           public.user_accounts
 
@@ -355,26 +422,83 @@ const upsertUser = async (user: ZktecoUser) => {
 
           role = $2,
 
-          name =
+          card_no =
             CASE
               WHEN NULLIF(
-                TRIM($3),
+                TRIM(
+                  $3::text
+                ),
                 ''
               ) IS NULL
-              THEN name
+
+              THEN card_no
 
               ELSE $3
             END,
 
-          card_no = $4
+          name =
+            CASE
+              WHEN NULLIF(
+                TRIM(
+                  COALESCE(
+                    name,
+                    ''
+                  )
+                ),
+                ''
+              ) IS NULL
+
+              THEN
+                CASE
+                  WHEN NULLIF(
+                    TRIM(
+                      $4::text
+                    ),
+                    ''
+                  ) IS NULL
+
+                  THEN CONCAT(
+                    'User ',
+                    $5
+                  )
+
+                  ELSE $4
+                END
+
+              ELSE name
+            END
 
         WHERE
           user_id = $5
+        `,
+      [
+        Number.isFinite(uid) ? uid : 0,
 
-        RETURNING
-          user_id
-      )
+        Number.isFinite(role) ? role : 0,
 
+        cardNo,
+
+        deviceName,
+
+        userId,
+      ],
+    );
+
+    return true;
+  }
+
+  /* ================================================================
+       NEW USER
+    ================================================================= */
+
+  /*
+   * For a newly enrolled biometric
+   * employee, use the information from
+   * the device to create the account.
+   */
+
+  await query(
+    `
       INSERT INTO
         public.user_accounts
       (
@@ -386,33 +510,14 @@ const upsertUser = async (user: ZktecoUser) => {
         created_at
       )
 
-      SELECT
+      VALUES
+      (
         $1,
         $2,
-
-        CASE
-          WHEN NULLIF(
-            TRIM($3),
-            ''
-          ) IS NULL
-          THEN CONCAT(
-            'User ',
-            $5
-          )
-
-          ELSE $3
-        END,
-
+        $3,
         $4,
         $5,
         NOW()
-
-      WHERE NOT EXISTS
-      (
-        SELECT
-          1
-        FROM
-          updated
       )
       `,
     [
@@ -420,13 +525,18 @@ const upsertUser = async (user: ZktecoUser) => {
 
       Number.isFinite(role) ? role : 0,
 
-      name,
+      deviceName || `User ${userId}`,
 
       cardNo,
 
       userId,
     ],
   );
+
+  console.log("[ZKTeco] New biometric user added:", {
+    userId,
+    name: deviceName || `User ${userId}`,
+  });
 
   return true;
 };
